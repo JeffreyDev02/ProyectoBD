@@ -5,6 +5,7 @@ Proyecto **MueblesOnline**: portal para el caso *Muebles de los Alpes* (Bases de
 ## Requisitos
 
 - Visual Studio 2022 (o 2019) con carga de trabajo **ASP.NET y desarrollo web**
+- Por fines didacticos se nos permite usar IA, por lo que el IDE a utilizar será **Antigravity**
 - **.NET Framework 4.8.1**
 - Oracle Database accesible desde tu red (desarrollo local o servidor del equipo)
 - Paquetes NuGet: Visual Studio suele restaurarlos al abrir el proyecto; la carpeta `packages` puede estar en el directorio **padre** del proyecto (`..\packages`), según cómo esté configurado el equipo
