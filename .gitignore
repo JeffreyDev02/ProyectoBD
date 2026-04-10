@@ -1,5 +1,8 @@
 # Raíz del repositorio: esta carpeta (ProyectoBD).
 
+# Cadenas de conexión locales (plantilla en repo: connectionStrings.config.example)
+connectionStrings.config
+
 # Salida de compilación (sí se genera dentro de ProyectoBD)
 [Bb]in/
 [Oo]bj/
