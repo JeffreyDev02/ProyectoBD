@@ -1,0 +1,188 @@
+CREATE OR REPLACE PACKAGE PKG_MUE_DEVOLUCION AS
+
+  PROCEDURE PR_DEVOLUCION_INSERTAR (
+    P_FAC_FACTURA      IN NUMBER,
+    P_DEV_FECHA        IN DATE,
+    P_DEV_MOTIVO       IN VARCHAR2,
+    O_DEV_DEVOLUCION   OUT NUMBER,
+    O_COD_RET          OUT NUMBER,
+    O_MSG              OUT VARCHAR2
+  );
+
+  PROCEDURE PR_DEVOLUCION_ACTUALIZAR (
+    P_DEV_DEVOLUCION   IN NUMBER,
+    P_DEV_FECHA        IN DATE,
+    P_DEV_MOTIVO       IN VARCHAR2,
+    O_COD_RET          OUT NUMBER,
+    O_MSG              OUT VARCHAR2
+  );
+
+  PROCEDURE PR_DEVOLUCION_ELIMINAR (
+    P_DEV_DEVOLUCION   IN NUMBER,
+    O_COD_RET          OUT NUMBER,
+    O_MSG              OUT VARCHAR2
+  );
+
+  PROCEDURE PR_DEVOLUCION_OBTENER (
+    P_DEV_DEVOLUCION   IN NUMBER,
+    O_CURSOR           OUT SYS_REFCURSOR,
+    O_COD_RET          OUT NUMBER,
+    O_MSG              OUT VARCHAR2
+  );
+
+  PROCEDURE PR_DEVOLUCION_LISTAR (
+    O_CURSOR           OUT SYS_REFCURSOR,
+    O_COD_RET          OUT NUMBER,
+    O_MSG              OUT VARCHAR2
+  );
+
+END PKG_MUE_DEVOLUCION;
+/
+CREATE OR REPLACE PACKAGE BODY PKG_MUE_DEVOLUCION AS
+
+  C_OK    CONSTANT NUMBER := 0;
+  C_ERR   CONSTANT NUMBER := 1;
+  C_NOFND CONSTANT NUMBER := 2;
+
+  PROCEDURE PR_DEVOLUCION_INSERTAR (
+    P_FAC_FACTURA,
+    P_DEV_FECHA,
+    P_DEV_MOTIVO,
+    O_DEV_DEVOLUCION OUT NUMBER,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+  ) IS
+    V_EXISTE NUMBER;
+  BEGIN
+    SELECT COUNT(*)
+      INTO V_EXISTE
+      FROM MUE_FACTURA
+     WHERE FAC_Factura = P_FAC_FACTURA;
+
+    IF V_EXISTE = 0 THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'La factura no existe.';
+      RETURN;
+    END IF;
+
+    SELECT COUNT(*)
+      INTO V_EXISTE
+      FROM MUE_DEVOLUCION
+     WHERE FAC_Factura = P_FAC_FACTURA;
+
+    IF V_EXISTE > 0 THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'La factura ya tiene devolución registrada.';
+      RETURN;
+    END IF;
+
+    INSERT INTO MUE_DEVOLUCION (
+      FAC_Factura,
+      DEV_Fecha,
+      DEV_Motivo,
+      DEV_Created_At
+    )
+    VALUES (
+      P_FAC_FACTURA,
+      P_DEV_FECHA,
+      P_DEV_MOTIVO,
+      SYSTIMESTAMP
+    )
+    RETURNING DEV_Devolucion INTO O_DEV_DEVOLUCION;
+
+    FOR R IN (
+      SELECT D.PRO_Producto, D.MOD_Cantidad
+        FROM MUE_FACTURA F
+        JOIN MUE_ORDEN_DETALLE D
+          ON F.MOV_Orden_Venta = D.MOV_Orden_Venta
+       WHERE F.FAC_Factura = P_FAC_FACTURA
+    ) LOOP
+      UPDATE MUE_PRODUCTO
+         SET PRO_Cant_Existente = PRO_Cant_Existente + R.MOD_Cantidad
+       WHERE PRO_Producto = R.PRO_Producto;
+    END LOOP;
+
+    O_COD_RET := C_OK;
+    O_MSG := 'Devolución registrada correctamente.';
+
+  EXCEPTION
+    WHEN OTHERS THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'Error al registrar devolución: ' || SQLERRM;
+  END;
+
+  PROCEDURE PR_DEVOLUCION_ACTUALIZAR (
+    P_DEV_DEVOLUCION,
+    P_DEV_FECHA,
+    P_DEV_MOTIVO,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+  ) IS
+  BEGIN
+    UPDATE MUE_DEVOLUCION
+       SET DEV_Fecha = P_DEV_FECHA,
+           DEV_Motivo = P_DEV_MOTIVO
+     WHERE DEV_Devolucion = P_DEV_DEVOLUCION;
+
+    IF SQL%ROWCOUNT = 0 THEN
+      O_COD_RET := C_NOFND;
+      O_MSG := 'Devolución no encontrada.';
+      RETURN;
+    END IF;
+
+    O_COD_RET := C_OK;
+    O_MSG := 'Devolución actualizada correctamente.';
+  END;
+
+  PROCEDURE PR_DEVOLUCION_ELIMINAR (
+    P_DEV_DEVOLUCION,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+  ) IS
+  BEGIN
+    DELETE FROM MUE_DEVOLUCION
+     WHERE DEV_Devolucion = P_DEV_DEVOLUCION;
+
+    IF SQL%ROWCOUNT = 0 THEN
+      O_COD_RET := C_NOFND;
+      O_MSG := 'Devolución no encontrada.';
+      RETURN;
+    END IF;
+
+    O_COD_RET := C_OK;
+    O_MSG := 'Devolución eliminada correctamente.';
+  END;
+
+  PROCEDURE PR_DEVOLUCION_OBTENER (
+    P_DEV_DEVOLUCION,
+    O_CURSOR OUT SYS_REFCURSOR,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+  ) IS
+  BEGIN
+    OPEN O_CURSOR FOR
+      SELECT *
+        FROM MUE_DEVOLUCION
+       WHERE DEV_Devolucion = P_DEV_DEVOLUCION;
+
+    O_COD_RET := C_OK;
+    O_MSG := 'OK';
+  END;
+
+  PROCEDURE PR_DEVOLUCION_LISTAR (
+    O_CURSOR OUT SYS_REFCURSOR,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+  ) IS
+  BEGIN
+    OPEN O_CURSOR FOR
+      SELECT *
+        FROM MUE_DEVOLUCION
+       ORDER BY DEV_Fecha DESC;
+
+    O_COD_RET := C_OK;
+    O_MSG := 'OK';
+  END;
+
+END PKG_MUE_DEVOLUCION;
+/
