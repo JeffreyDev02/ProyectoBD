@@ -1,0 +1,75 @@
+﻿-- =============================================================================
+-- Pruebas manuales — PKG_MUE_TIPO_DOCUMENTO
+-- SQL Developer: habilitar View → Dbms Output y asociar la conexión.
+-- SQL*Plus / SQLcl: SET SERVEROUTPUT ON SIZE UNLIMITED
+-- =============================================================================
+SET SERVEROUTPUT ON SIZE UNLIMITED
+
+PROMPT === 1) Insertar tipo de documento ===
+DECLARE V_ID NUMBER; V_RET NUMBER; V_MSG VARCHAR2(4000);
+BEGIN
+  PKG_MUE_TIPO_DOCUMENTO.PR_TIPO_DOC_INSERTAR('Tipo Doc QA', V_ID, V_RET, V_MSG);
+  DBMS_OUTPUT.PUT_LINE('RET=' || V_RET || ' MSG=' || V_MSG || ' ID=' || V_ID);
+  IF V_RET <> 0 OR V_ID IS NULL THEN RAISE_APPLICATION_ERROR(-20001, 'Fallo insertar: ' || V_MSG); END IF;
+END;
+/
+
+PROMPT === 2) Obtener tipo de documento ===
+DECLARE V_ID NUMBER; V_TIPO VARCHAR2(40); V_RET NUMBER; V_MSG VARCHAR2(4000);
+BEGIN
+  SELECT MAX(TDC_Tipo_Documento) INTO V_ID FROM MUE_TIPO_DOCUMENTO WHERE TDC_Tipo = 'Tipo Doc QA';
+  PKG_MUE_TIPO_DOCUMENTO.PR_TIPO_DOC_OBTENER(V_ID, V_TIPO, V_RET, V_MSG);
+  DBMS_OUTPUT.PUT_LINE('RET=' || V_RET || ' TIPO=' || V_TIPO);
+END;
+/
+
+PROMPT === 3) Listar con filtro ===
+DECLARE V_CUR SYS_REFCURSOR; V_RET NUMBER; V_MSG VARCHAR2(4000); V_ID NUMBER; V_TIPO VARCHAR2(40);
+BEGIN
+  PKG_MUE_TIPO_DOCUMENTO.PR_TIPO_DOC_LISTAR('QA', V_CUR, V_RET, V_MSG);
+  DBMS_OUTPUT.PUT_LINE('LISTAR RET=' || V_RET || ' ' || V_MSG);
+  LOOP FETCH V_CUR INTO V_ID, V_TIPO; EXIT WHEN V_CUR%NOTFOUND;
+    DBMS_OUTPUT.PUT_LINE('  ID=' || V_ID || ' TIPO=' || V_TIPO);
+  END LOOP; CLOSE V_CUR;
+END;
+/
+
+PROMPT === 4) Actualizar tipo de documento ===
+DECLARE V_ID NUMBER; V_RET NUMBER; V_MSG VARCHAR2(4000);
+BEGIN
+  SELECT MAX(TDC_Tipo_Documento) INTO V_ID FROM MUE_TIPO_DOCUMENTO WHERE TDC_Tipo = 'Tipo Doc QA';
+  PKG_MUE_TIPO_DOCUMENTO.PR_TIPO_DOC_ACTUALIZAR(V_ID, 'Tipo Doc QA (mod)', V_RET, V_MSG);
+  DBMS_OUTPUT.PUT_LINE('UPDATE RET=' || V_RET || ' ' || V_MSG);
+END;
+/
+
+PROMPT === 5) Verificación directa ===
+SELECT TDC_Tipo_Documento, TDC_Tipo FROM MUE_TIPO_DOCUMENTO WHERE TDC_Tipo LIKE 'Tipo Doc QA%';
+
+PROMPT === 6) Caso negativo: tipo vacío ===
+DECLARE V_ID NUMBER; V_RET NUMBER; V_MSG VARCHAR2(4000);
+BEGIN
+  PKG_MUE_TIPO_DOCUMENTO.PR_TIPO_DOC_INSERTAR('  ', V_ID, V_RET, V_MSG);
+  DBMS_OUTPUT.PUT_LINE('Esperado RET<>0: RET=' || V_RET || ' MSG=' || V_MSG);
+END;
+/
+
+PROMPT === 7) Caso negativo: ID inexistente ===
+DECLARE V_RET NUMBER; V_MSG VARCHAR2(4000);
+BEGIN
+  PKG_MUE_TIPO_DOCUMENTO.PR_TIPO_DOC_ELIMINAR(-999, V_RET, V_MSG);
+  DBMS_OUTPUT.PUT_LINE('Esperado RET=2: RET=' || V_RET || ' MSG=' || V_MSG);
+END;
+/
+
+PROMPT === 8) Eliminar tipo de documento ===
+DECLARE V_ID NUMBER; V_RET NUMBER; V_MSG VARCHAR2(4000);
+BEGIN
+  SELECT MAX(TDC_Tipo_Documento) INTO V_ID FROM MUE_TIPO_DOCUMENTO WHERE TDC_Tipo LIKE 'Tipo Doc QA%';
+  PKG_MUE_TIPO_DOCUMENTO.PR_TIPO_DOC_ELIMINAR(V_ID, V_RET, V_MSG);
+  DBMS_OUTPUT.PUT_LINE('DELETE RET=' || V_RET || ' ' || V_MSG);
+END;
+/
+
+PROMPT === Fin. Conteo restante (debe ser 0) ===
+SELECT COUNT(1) AS CANT FROM MUE_TIPO_DOCUMENTO WHERE TDC_Tipo LIKE 'Tipo Doc QA%';

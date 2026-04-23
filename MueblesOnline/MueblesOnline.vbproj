@@ -49,6 +49,9 @@
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=2.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -134,9 +137,6 @@
     </Reference>
     <Reference Include="System.Web.Http.WebHost">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.WebHost.5.2.9\lib\net45\System.Web.Http.WebHost.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform">
-      <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -242,6 +242,55 @@
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
     <None Include="packages.config" />
+    <Content Include="database\DDL_MUEBLERIA.sql" />
+    <Content Include="database\procedures\EJEMPLO_PKG_MUE_SEDE.sql" />
+    <Content Include="database\procedures\PKG_MUE_ALMACEN.sql" />
+    <Content Include="database\procedures\PKG_MUE_AREA.sql" />
+    <Content Include="database\procedures\PKG_MUE_BODEGA.sql" />
+    <Content Include="database\procedures\PKG_MUE_CATEGORIA.sql" />
+    <Content Include="database\procedures\PKG_MUE_DEPARTAMENTO.sql" />
+    <Content Include="database\procedures\PKG_MUE_ENTREGA_COMPRA.sql" />
+    <Content Include="database\procedures\PKG_MUE_ENVIO.sql" />
+    <Content Include="database\procedures\PKG_MUE_ESTABLECIMIENTO.sql" />
+    <Content Include="database\procedures\PKG_MUE_ESTADO_CAJA.sql" />
+    <Content Include="database\procedures\PKG_MUE_ESTADO_ORDEN_VENTA.sql" />
+    <Content Include="database\procedures\PKG_MUE_MATERIAL.sql" />
+    <Content Include="database\procedures\PKG_MUE_METODO_PAGO.sql" />
+    <Content Include="database\procedures\PKG_MUE_PERMISO.sql" />
+    <Content Include="database\procedures\PKG_MUE_PROFESION.sql" />
+    <Content Include="database\procedures\PKG_MUE_PROVEEDOR.sql" />
+    <Content Include="database\procedures\PKG_MUE_PUESTO.sql" />
+    <Content Include="database\procedures\PKG_MUE_ROL.sql" />
+    <Content Include="database\procedures\PKG_MUE_ROL_PERMISO.sql" />
+    <Content Include="database\procedures\PKG_MUE_TALLER_PRODUCCION.sql" />
+    <Content Include="database\procedures\PKG_MUE_TIPO_DOCUMENTO.sql" />
+    <Content Include="database\procedures\PKG_MUE_TIPO_EVENTO.sql" />
+    <Content Include="database\procedures\PKG_MUE_TIPO_MOVIMIENTO_MATERIAL.sql" />
+    <Content Include="database\procedures\PKG_MUE_TIPO_MOVIMIENTO_PRODUCTO.sql" />
+    <Content Include="database\testing\TEST_PKG_MUE_ALMACEN.sql" />
+    <Content Include="database\testing\TEST_PKG_MUE_AREA.sql" />
+    <Content Include="database\testing\TEST_PKG_MUE_BODEGA.sql" />
+    <Content Include="database\testing\TEST_PKG_MUE_CATEGORIA.sql" />
+    <Content Include="database\testing\TEST_PKG_MUE_DEPARTAMENTO.sql" />
+    <Content Include="database\testing\TEST_PKG_MUE_ENTREGA_COMPRA.sql" />
+    <Content Include="database\testing\TEST_PKG_MUE_ENVIO.sql" />
+    <Content Include="database\testing\TEST_PKG_MUE_ESTABLECIMIENTO.sql" />
+    <Content Include="database\testing\TEST_PKG_MUE_ESTADO_CAJA.sql" />
+    <Content Include="database\testing\TEST_PKG_MUE_ESTADO_ORDEN_VENTA.sql" />
+    <Content Include="database\testing\TEST_PKG_MUE_MATERIAL.sql" />
+    <Content Include="database\testing\TEST_PKG_MUE_METODO_PAGO.sql" />
+    <Content Include="database\testing\TEST_PKG_MUE_PERMISO.sql" />
+    <Content Include="database\testing\TEST_PKG_MUE_PROFESION.sql" />
+    <Content Include="database\testing\TEST_PKG_MUE_PROVEEDOR.sql" />
+    <Content Include="database\testing\TEST_PKG_MUE_PUESTO.sql" />
+    <Content Include="database\testing\TEST_PKG_MUE_ROL.sql" />
+    <Content Include="database\testing\TEST_PKG_MUE_ROL_PERMISO.sql" />
+    <Content Include="database\testing\TEST_PKG_MUE_SEDE.sql" />
+    <Content Include="database\testing\TEST_PKG_MUE_TALLER_PRODUCCION.sql" />
+    <Content Include="database\testing\TEST_PKG_MUE_TIPO_DOCUMENTO.sql" />
+    <Content Include="database\testing\TEST_PKG_MUE_TIPO_EVENTO.sql" />
+    <Content Include="database\testing\TEST_PKG_MUE_TIPO_MOVIMIENTO_MATERIAL.sql" />
+    <Content Include="database\testing\TEST_PKG_MUE_TIPO_MOVIMIENTO_PRODUCTO.sql" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
     <Content Include="Scripts\bootstrap.esm.js" />
@@ -322,16 +371,16 @@
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target> -->
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>Este proyecto hace referencia a los paquetes NuGet que faltan en este equipo. Use la restauración de paquetes NuGet para descargarlos. Para obtener más información, consulte http://go.microsoft.com/fwlink/?LinkID=322105. El archivo que falta es {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
   </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target> -->
 </Project>

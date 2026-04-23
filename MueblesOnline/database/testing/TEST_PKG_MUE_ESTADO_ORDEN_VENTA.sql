@@ -1,0 +1,76 @@
+﻿-- =============================================================================
+-- Pruebas manuales — PKG_MUE_ESTADO_ORDEN_VENTA
+-- SQL Developer: habilitar View → Dbms Output y asociar la conexión.
+-- SQL*Plus / SQLcl: SET SERVEROUTPUT ON SIZE UNLIMITED
+-- =============================================================================
+SET SERVEROUTPUT ON SIZE UNLIMITED
+
+PROMPT === 1) Insertar estado de orden de venta ===
+DECLARE V_ID NUMBER; V_RET NUMBER; V_MSG VARCHAR2(4000);
+BEGIN
+  PKG_MUE_ESTADO_ORDEN_VENTA.PR_ESTADO_OV_INSERTAR('Estado QA', 'Descripción QA', V_ID, V_RET, V_MSG);
+  DBMS_OUTPUT.PUT_LINE('RET=' || V_RET || ' MSG=' || V_MSG || ' ID=' || V_ID);
+  IF V_RET <> 0 OR V_ID IS NULL THEN RAISE_APPLICATION_ERROR(-20001, 'Fallo insertar: ' || V_MSG); END IF;
+END;
+/
+
+PROMPT === 2) Obtener estado ===
+DECLARE V_ID NUMBER; V_EST VARCHAR2(30); V_DESC VARCHAR2(100); V_RET NUMBER; V_MSG VARCHAR2(4000);
+BEGIN
+  SELECT MAX(EOV_Estado_Orden_Venta) INTO V_ID FROM MUE_ESTADO_ORDEN_VENTA WHERE EOV_Estado = 'Estado QA';
+  PKG_MUE_ESTADO_ORDEN_VENTA.PR_ESTADO_OV_OBTENER(V_ID, V_EST, V_DESC, V_RET, V_MSG);
+  DBMS_OUTPUT.PUT_LINE('RET=' || V_RET || ' EST=' || V_EST || ' DESC=' || V_DESC);
+END;
+/
+
+PROMPT === 3) Listar con filtro ===
+DECLARE V_CUR SYS_REFCURSOR; V_RET NUMBER; V_MSG VARCHAR2(4000); V_ID NUMBER; V_EST VARCHAR2(30); V_DESC VARCHAR2(100);
+BEGIN
+  PKG_MUE_ESTADO_ORDEN_VENTA.PR_ESTADO_OV_LISTAR('QA', V_CUR, V_RET, V_MSG);
+  DBMS_OUTPUT.PUT_LINE('LISTAR RET=' || V_RET || ' ' || V_MSG);
+  LOOP FETCH V_CUR INTO V_ID, V_EST, V_DESC; EXIT WHEN V_CUR%NOTFOUND;
+    DBMS_OUTPUT.PUT_LINE('  ID=' || V_ID || ' EST=' || V_EST);
+  END LOOP; CLOSE V_CUR;
+END;
+/
+
+PROMPT === 4) Actualizar estado ===
+DECLARE V_ID NUMBER; V_RET NUMBER; V_MSG VARCHAR2(4000);
+BEGIN
+  SELECT MAX(EOV_Estado_Orden_Venta) INTO V_ID FROM MUE_ESTADO_ORDEN_VENTA WHERE EOV_Estado = 'Estado QA';
+  PKG_MUE_ESTADO_ORDEN_VENTA.PR_ESTADO_OV_ACTUALIZAR(V_ID, 'Estado QA (mod)', 'Desc mod', V_RET, V_MSG);
+  DBMS_OUTPUT.PUT_LINE('UPDATE RET=' || V_RET || ' ' || V_MSG);
+END;
+/
+
+PROMPT === 5) Verificación directa ===
+SELECT EOV_Estado_Orden_Venta, EOV_Estado, EOV_Descripcion
+  FROM MUE_ESTADO_ORDEN_VENTA WHERE EOV_Estado LIKE 'Estado QA%';
+
+PROMPT === 6) Caso negativo: nombre vacío ===
+DECLARE V_ID NUMBER; V_RET NUMBER; V_MSG VARCHAR2(4000);
+BEGIN
+  PKG_MUE_ESTADO_ORDEN_VENTA.PR_ESTADO_OV_INSERTAR('  ', NULL, V_ID, V_RET, V_MSG);
+  DBMS_OUTPUT.PUT_LINE('Esperado RET<>0: RET=' || V_RET || ' MSG=' || V_MSG);
+END;
+/
+
+PROMPT === 7) Caso negativo: ID inexistente ===
+DECLARE V_RET NUMBER; V_MSG VARCHAR2(4000);
+BEGIN
+  PKG_MUE_ESTADO_ORDEN_VENTA.PR_ESTADO_OV_ELIMINAR(-999, V_RET, V_MSG);
+  DBMS_OUTPUT.PUT_LINE('Esperado RET=2: RET=' || V_RET || ' MSG=' || V_MSG);
+END;
+/
+
+PROMPT === 8) Eliminar estado ===
+DECLARE V_ID NUMBER; V_RET NUMBER; V_MSG VARCHAR2(4000);
+BEGIN
+  SELECT MAX(EOV_Estado_Orden_Venta) INTO V_ID FROM MUE_ESTADO_ORDEN_VENTA WHERE EOV_Estado LIKE 'Estado QA%';
+  PKG_MUE_ESTADO_ORDEN_VENTA.PR_ESTADO_OV_ELIMINAR(V_ID, V_RET, V_MSG);
+  DBMS_OUTPUT.PUT_LINE('DELETE RET=' || V_RET || ' ' || V_MSG);
+END;
+/
+
+PROMPT === Fin. Conteo restante (debe ser 0) ===
+SELECT COUNT(1) AS CANT FROM MUE_ESTADO_ORDEN_VENTA WHERE EOV_Estado LIKE 'Estado QA%';
