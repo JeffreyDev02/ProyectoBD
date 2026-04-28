@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Copiar este archivo como "connectionStrings.config" en la misma carpeta que Web.config y poner tus valores reales. -->
-<connectionStrings>
-  <add name="OraclePrimary" connectionString="Data Source=localhost:1521/ORCL;User Id=MUEBLERIA;Password=CAMBIAR_EN_LOCAL;" providerName="Oracle.ManagedDataAccess.Client" />
-  <add name="OracleReporting" connectionString="Data Source=localhost:1521/XEPDB1;User Id=APP_USER_READONLY;Password=CAMBIAR_EN_SECRETO;" providerName="Oracle.ManagedDataAccess.Client" />
-</connectionStrings>
