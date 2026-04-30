@@ -1,7 +1,8 @@
 CREATE OR REPLACE PACKAGE PKG_MUE_G3_COMPRAS_INV_RRHH AS
 
-
-    -- 1. PROCEDIMIENTOS DE TURNOS
+-- ===========================
+-- 1. PROCEDIMIENTOS DE TURNOS
+-- ===========================
     PROCEDURE PR_TURNO_INSERTAR(
         P_HORA_ENTRADA IN TIMESTAMP, 
         P_HORA_SALIDA  IN TIMESTAMP, 
@@ -30,8 +31,9 @@ CREATE OR REPLACE PACKAGE PKG_MUE_G3_COMPRAS_INV_RRHH AS
         O_COD_RET OUT NUMBER, 
         O_MSG     OUT VARCHAR2
     );
-
-    -- 2. PROCEDIMIENTOS DE CONCEPTOS DE PAGO
+-- ==========================================
+ -- 2. PROCEDIMIENTOS DE CONCEPTOS DE PAGO
+-- ==========================================
     PROCEDURE PR_CONCEPTO_INSERTAR(
         P_CODIGO      IN VARCHAR2, 
         P_NOMBRE      IN VARCHAR2, 
@@ -63,9 +65,9 @@ CREATE OR REPLACE PACKAGE PKG_MUE_G3_COMPRAS_INV_RRHH AS
         O_MSG     OUT VARCHAR2
     );
     
-    -----------------------------------------
+-- =======================================
     -- 3. PEDIDO PROVEEDOR (CABECERA)
-    -----------------------------------------
+-- =====================================
 
     PROCEDURE PR_PEP_INSERTAR(
         P_FECHA          IN DATE,
@@ -108,9 +110,9 @@ CREATE OR REPLACE PACKAGE PKG_MUE_G3_COMPRAS_INV_RRHH AS
         O_MSG     OUT VARCHAR2
     );
     
-        -----------------------------------------
+-- =========================
     -- 4. DETALLE PEDIDO MATERIAL
-    -----------------------------------------
+-- =========================
 
     PROCEDURE PR_DPM_INSERTAR(
         P_PEDIDO        IN NUMBER,
@@ -142,8 +144,9 @@ CREATE OR REPLACE PACKAGE PKG_MUE_G3_COMPRAS_INV_RRHH AS
         O_MSG     OUT VARCHAR2
     );
     
+-- ==================================
     -- MOVIMIENTO INVENTARIO MATERIAL
-
+-- ==================================
 PROCEDURE PR_MIN_INSERTAR(
     P_MAL_ID        IN NUMBER,
     P_TIPO_MOV      IN NUMBER,
@@ -178,9 +181,9 @@ PROCEDURE PR_MIN_ACTUALIZAR(
     O_COD_RET       OUT NUMBER,
     O_MSG           OUT VARCHAR2
 );
-
+-- ===========================================
 -- DETALLE MATERIAL PRODUCTO (RECETA)
-
+-- ===========================================
 PROCEDURE PR_DMP_INSERTAR(
     P_TPR          IN NUMBER,
     P_MAT          IN NUMBER,
@@ -219,9 +222,9 @@ PROCEDURE PR_DMP_ELIMINAR(
     O_COD_RET      OUT NUMBER,
     O_MSG          OUT VARCHAR2
 );
-
+-- ================================================
 -- PRODUCTO BODEGA (INVENTARIO PRODUCTO)
-
+-- ================================================
 PROCEDURE PR_PBO_INSERTAR(
     P_BODEGA        IN NUMBER,
     P_PRODUCTO      IN NUMBER,
@@ -268,6 +271,228 @@ PROCEDURE PR_PBO_ALERTA_MINIMO(
     O_COD_RET       OUT NUMBER,
     O_MSG           OUT VARCHAR2
 );
+
+-- =========================
+-- ASIGNACION TURNO
+-- =========================
+
+PROCEDURE PR_AST_INSERTAR(
+    P_EMP IN NUMBER,
+    P_TUR IN NUMBER,
+    P_FECHA_INICIO IN DATE,
+    P_FECHA_FIN IN DATE,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+);
+
+PROCEDURE PR_AST_LISTAR(
+    P_EMP IN NUMBER,
+    O_DATA OUT SYS_REFCURSOR,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+);
+
+PROCEDURE PR_AST_OBTENER(
+    P_ID IN NUMBER,
+    O_DATA OUT SYS_REFCURSOR,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+);
+
+PROCEDURE PR_AST_ACTUALIZAR(
+    P_ID IN NUMBER,
+    P_TUR IN NUMBER,
+    P_FECHA_INICIO IN DATE,
+    P_FECHA_FIN IN DATE,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+);
+
+PROCEDURE PR_AST_ELIMINAR(
+    P_ID IN NUMBER,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+);
+
+-- =========================
+-- REGISTRO ASISTENCIA
+-- =========================
+
+PROCEDURE PR_REA_ENTRADA(
+    P_EMP IN NUMBER,
+    P_OBS IN VARCHAR2,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+);
+
+PROCEDURE PR_REA_SALIDA(
+    P_EMP IN NUMBER,
+    P_OBS IN VARCHAR2,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+);
+
+PROCEDURE PR_REA_LISTAR(
+    P_EMP IN NUMBER,
+    O_DATA OUT SYS_REFCURSOR,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+);
+
+PROCEDURE PR_REA_OBTENER(
+    P_ID IN NUMBER,
+    O_DATA OUT SYS_REFCURSOR,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+);
+
+PROCEDURE PR_REA_ELIMINAR(
+    P_ID IN NUMBER,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+);
+
+-- =========================
+-- CONTRATO
+-- =========================
+
+PROCEDURE PR_CTR_INSERTAR(
+    P_EMP IN NUMBER,
+    P_PUE IN NUMBER,
+    P_FECHA_INICIO IN DATE,
+    P_FECHA_FIN IN DATE,
+    P_SALARIO IN NUMBER,
+    P_MONEDA IN VARCHAR2,
+    P_ESTADO IN NUMBER,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+);
+
+PROCEDURE PR_CTR_LISTAR(
+    P_EMP IN NUMBER,
+    O_DATA OUT SYS_REFCURSOR,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+);
+
+PROCEDURE PR_CTR_OBTENER(
+    P_ID IN NUMBER,
+    O_DATA OUT SYS_REFCURSOR,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+);
+
+PROCEDURE PR_CTR_ACTUALIZAR(
+    P_ID IN NUMBER,
+    P_PUE IN NUMBER,
+    P_FECHA_INICIO IN DATE,
+    P_FECHA_FIN IN DATE,
+    P_SALARIO IN NUMBER,
+    P_MONEDA IN VARCHAR2,
+    P_ESTADO IN NUMBER,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+);
+
+PROCEDURE PR_CTR_ELIMINAR(
+    P_ID IN NUMBER,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+);
+
+
+-- =========================
+-- NOMINA
+-- =========================
+
+PROCEDURE PR_NOM_INSERTAR(
+    P_CONTRATO     IN NUMBER,
+    P_FECHA_INI    IN DATE,
+    P_FECHA_FIN    IN DATE,
+    O_COD_RET      OUT NUMBER,
+    O_MSG          OUT VARCHAR2
+);
+
+PROCEDURE PR_NOM_LISTAR(
+    O_DATA    OUT SYS_REFCURSOR,
+    O_COD_RET OUT NUMBER,
+    O_MSG     OUT VARCHAR2
+);
+
+PROCEDURE PR_NOM_OBTENER(
+    P_ID      IN NUMBER,
+    O_DATA    OUT SYS_REFCURSOR,
+    O_COD_RET OUT NUMBER,
+    O_MSG     OUT VARCHAR2
+);
+
+PROCEDURE PR_NOM_ACTUALIZAR(
+    P_ID           IN NUMBER,
+    P_FECHA_INI    IN DATE,
+    P_FECHA_FIN    IN DATE,
+    O_COD_RET      OUT NUMBER,
+    O_MSG          OUT VARCHAR2
+);
+
+PROCEDURE PR_NOM_ELIMINAR(
+    P_ID      IN NUMBER,
+    O_COD_RET OUT NUMBER,
+    O_MSG     OUT VARCHAR2
+);
+
+PROCEDURE PR_NOM_CALCULAR_TOTALES(
+    P_ID      IN NUMBER,
+    O_COD_RET OUT NUMBER,
+    O_MSG     OUT VARCHAR2
+);
+
+PROCEDURE PR_NOM_CERRAR(
+    P_ID      IN NUMBER,
+    O_COD_RET OUT NUMBER,
+    O_MSG     OUT VARCHAR2
+);
+
+-- =========================
+-- DETALLE NOMINA
+-- =========================
+
+PROCEDURE PR_DNM_INSERTAR(
+    P_NOMINA        IN NUMBER,
+    P_CONCEPTO      IN NUMBER,
+    P_VALOR         IN NUMBER,
+    P_OBSERVACION   IN VARCHAR2,
+    O_COD_RET       OUT NUMBER,
+    O_MSG           OUT VARCHAR2
+);
+
+PROCEDURE PR_DNM_LISTAR(
+    P_NOMINA   IN NUMBER,
+    O_DATA     OUT SYS_REFCURSOR,
+    O_COD_RET  OUT NUMBER,
+    O_MSG      OUT VARCHAR2
+);
+
+PROCEDURE PR_DNM_OBTENER(
+    P_ID      IN NUMBER,
+    O_DATA    OUT SYS_REFCURSOR,
+    O_COD_RET OUT NUMBER,
+    O_MSG     OUT VARCHAR2
+);
+
+PROCEDURE PR_DNM_ACTUALIZAR(
+    P_ID          IN NUMBER,
+    P_VALOR       IN NUMBER,
+    P_OBSERVACION IN VARCHAR2,
+    O_COD_RET     OUT NUMBER,
+    O_MSG         OUT VARCHAR2
+);
+
+PROCEDURE PR_DNM_ELIMINAR(
+    P_ID      IN NUMBER,
+    O_COD_RET OUT NUMBER,
+    O_MSG     OUT VARCHAR2
+);
+
 
 END PKG_MUE_G3_COMPRAS_INV_RRHH;
 /
@@ -1711,6 +1936,1076 @@ EXCEPTION
     WHEN OTHERS THEN
         O_COD_RET := -1;
         O_MSG := 'Error: ' || SQLERRM;
+END;
+
+-- =========================
+-- ASIGNACION TURNO
+-- =========================
+
+PROCEDURE PR_AST_INSERTAR(
+    P_EMP IN NUMBER,
+    P_TUR IN NUMBER,
+    P_FECHA_INICIO IN DATE,
+    P_FECHA_FIN IN DATE,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+) AS
+    V_EXISTE NUMBER;
+BEGIN
+    -- Validaciones básicas
+    IF P_EMP IS NULL OR P_TUR IS NULL OR P_FECHA_INICIO IS NULL THEN
+        O_COD_RET := 1;
+        O_MSG := 'Empleado, turno y fecha inicio son obligatorios';
+        RETURN;
+    END IF;
+
+    -- Validar empleado
+    SELECT COUNT(*) INTO V_EXISTE
+    FROM MUE_EMPLEADO
+    WHERE EMP_Empleado = P_EMP;
+
+    IF V_EXISTE = 0 THEN
+        O_COD_RET := 1;
+        O_MSG := 'Empleado no existe';
+        RETURN;
+    END IF;
+
+    -- Validar turno
+    SELECT COUNT(*) INTO V_EXISTE
+    FROM MUE_TURNO
+    WHERE TUR_Turno = P_TUR;
+
+    IF V_EXISTE = 0 THEN
+        O_COD_RET := 1;
+        O_MSG := 'Turno no existe';
+        RETURN;
+    END IF;
+
+    -- Validar fechas coherentes
+    IF P_FECHA_FIN IS NOT NULL AND P_FECHA_FIN < P_FECHA_INICIO THEN
+        O_COD_RET := 1;
+        O_MSG := 'Fecha fin no puede ser menor que fecha inicio';
+        RETURN;
+    END IF;
+
+    INSERT INTO MUE_ASIGNACION_TURNO (
+        EMP_Empleado,
+        TUR_Turno,
+        AST_Fecha_Inicio,
+        AST_Fecha_Fin,
+        AST_Created_At
+    ) VALUES (
+        P_EMP,
+        P_TUR,
+        P_FECHA_INICIO,
+        P_FECHA_FIN,
+        SYSTIMESTAMP
+    );
+
+    O_COD_RET := 0;
+    O_MSG := 'Asignación creada correctamente';
+
+EXCEPTION
+    WHEN OTHERS THEN
+        O_COD_RET := -1;
+        O_MSG := 'Error al insertar: ' || SQLERRM;
+END;
+
+--------------------------------------------------
+
+PROCEDURE PR_AST_LISTAR(
+    P_EMP IN NUMBER,
+    O_DATA OUT SYS_REFCURSOR,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+) AS
+BEGIN
+    OPEN O_DATA FOR
+        SELECT 
+            AST.AST_Asignacion_Turno,
+            AST.EMP_Empleado,
+            E.EMP_Primer_Nombre || ' ' || E.EMP_Primer_Apellido AS EMPLEADO,
+            AST.TUR_Turno,
+            T.TUR_Descripcion,
+            AST.AST_Fecha_Inicio,
+            AST.AST_Fecha_Fin
+        FROM MUE_ASIGNACION_TURNO AST
+        JOIN MUE_EMPLEADO E ON E.EMP_Empleado = AST.EMP_Empleado
+        JOIN MUE_TURNO T ON T.TUR_Turno = AST.TUR_Turno
+        WHERE (P_EMP IS NULL OR AST.EMP_Empleado = P_EMP)
+        ORDER BY AST.AST_Asignacion_Turno DESC;
+
+    O_COD_RET := 0;
+    O_MSG := 'OK';
+
+EXCEPTION
+    WHEN OTHERS THEN
+        O_COD_RET := -1;
+        O_MSG := 'Error al listar: ' || SQLERRM;
+END;
+
+--------------------------------------------------
+
+PROCEDURE PR_AST_OBTENER(
+    P_ID IN NUMBER,
+    O_DATA OUT SYS_REFCURSOR,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+) AS
+BEGIN
+    OPEN O_DATA FOR
+        SELECT *
+        FROM MUE_ASIGNACION_TURNO
+        WHERE AST_Asignacion_Turno = P_ID;
+
+    O_COD_RET := 0;
+    O_MSG := 'OK';
+
+EXCEPTION
+    WHEN OTHERS THEN
+        O_COD_RET := -1;
+        O_MSG := 'Error al obtener: ' || SQLERRM;
+END;
+
+--------------------------------------------------
+
+PROCEDURE PR_AST_ACTUALIZAR(
+    P_ID IN NUMBER,
+    P_TUR IN NUMBER,
+    P_FECHA_INICIO IN DATE,
+    P_FECHA_FIN IN DATE,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+) AS
+BEGIN
+    -- Validar fechas
+    IF P_FECHA_FIN IS NOT NULL AND P_FECHA_FIN < P_FECHA_INICIO THEN
+        O_COD_RET := 1;
+        O_MSG := 'Fecha fin inválida';
+        RETURN;
+    END IF;
+
+    UPDATE MUE_ASIGNACION_TURNO
+    SET TUR_Turno = P_TUR,
+        AST_Fecha_Inicio = P_FECHA_INICIO,
+        AST_Fecha_Fin = P_FECHA_FIN
+    WHERE AST_Asignacion_Turno = P_ID;
+
+    IF SQL%ROWCOUNT = 0 THEN
+        O_COD_RET := 1;
+        O_MSG := 'No existe la asignación';
+        RETURN;
+    END IF;
+
+    O_COD_RET := 0;
+    O_MSG := 'Actualizado correctamente';
+
+EXCEPTION
+    WHEN OTHERS THEN
+        O_COD_RET := -1;
+        O_MSG := 'Error al actualizar: ' || SQLERRM;
+END;
+
+--------------------------------------------------
+
+PROCEDURE PR_AST_ELIMINAR(
+    P_ID IN NUMBER,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+) AS
+BEGIN
+    DELETE FROM MUE_ASIGNACION_TURNO
+    WHERE AST_Asignacion_Turno = P_ID;
+
+    IF SQL%ROWCOUNT = 0 THEN
+        O_COD_RET := 1;
+        O_MSG := 'No existe la asignación';
+        RETURN;
+    END IF;
+
+    O_COD_RET := 0;
+    O_MSG := 'Eliminado correctamente';
+
+EXCEPTION
+    WHEN OTHERS THEN
+        O_COD_RET := -1;
+        O_MSG := 'Error al eliminar: ' || SQLERRM;
+END;
+
+-- =========================
+-- REGISTRO ASISTENCIA
+-- =========================
+
+-- 🔹 ENTRADA (abre jornada)
+PROCEDURE PR_REA_ENTRADA(
+    P_EMP IN NUMBER,
+    P_OBS IN VARCHAR2,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+) AS
+    V_EXISTE NUMBER;
+BEGIN
+    -- Validar empleado
+    SELECT COUNT(*) INTO V_EXISTE
+    FROM MUE_EMPLEADO
+    WHERE EMP_Empleado = P_EMP;
+
+    IF V_EXISTE = 0 THEN
+        O_COD_RET := 1;
+        O_MSG := 'Empleado no existe';
+        RETURN;
+    END IF;
+
+    -- Validar que no tenga jornada abierta hoy
+    SELECT COUNT(*) INTO V_EXISTE
+    FROM MUE_REGISTRO_ASISTENCIA
+    WHERE EMP_Empleado = P_EMP
+      AND TRUNC(REA_Fecha) = TRUNC(SYSDATE)
+      AND REA_Hora_Salida IS NULL;
+
+    IF V_EXISTE > 0 THEN
+        O_COD_RET := 1;
+        O_MSG := 'Ya existe una entrada sin salida';
+        RETURN;
+    END IF;
+
+    INSERT INTO MUE_REGISTRO_ASISTENCIA (
+        EMP_Empleado,
+        REA_Fecha,
+        REA_Hora_Entrada,
+        REA_Observaciones,
+        REA_Created_At
+    ) VALUES (
+        P_EMP,
+        TRUNC(SYSDATE),
+        SYSTIMESTAMP,
+        P_OBS,
+        SYSTIMESTAMP
+    );
+
+    O_COD_RET := 0;
+    O_MSG := 'Entrada registrada';
+
+EXCEPTION
+    WHEN OTHERS THEN
+        O_COD_RET := -1;
+        O_MSG := 'Error en entrada: ' || SQLERRM;
+END;
+
+--------------------------------------------------
+
+-- 🔹 SALIDA (cierra jornada)
+PROCEDURE PR_REA_SALIDA(
+    P_EMP IN NUMBER,
+    P_OBS IN VARCHAR2,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+) AS
+    V_ID NUMBER;
+BEGIN
+    -- Buscar jornada abierta
+    SELECT REA_Registro_Asistencia
+    INTO V_ID
+    FROM MUE_REGISTRO_ASISTENCIA
+    WHERE EMP_Empleado = P_EMP
+      AND TRUNC(REA_Fecha) = TRUNC(SYSDATE)
+      AND REA_Hora_Salida IS NULL
+    FOR UPDATE;
+
+    -- Cerrar jornada
+    UPDATE MUE_REGISTRO_ASISTENCIA
+    SET REA_Hora_Salida = SYSTIMESTAMP,
+        REA_Observaciones = REA_Observaciones || ' | ' || P_OBS
+    WHERE REA_Registro_Asistencia = V_ID;
+
+    O_COD_RET := 0;
+    O_MSG := 'Salida registrada';
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        O_COD_RET := 1;
+        O_MSG := 'No hay entrada abierta';
+    WHEN OTHERS THEN
+        O_COD_RET := -1;
+        O_MSG := 'Error en salida: ' || SQLERRM;
+END;
+
+--------------------------------------------------
+
+-- 🔹 LISTAR
+PROCEDURE PR_REA_LISTAR(
+    P_EMP IN NUMBER,
+    O_DATA OUT SYS_REFCURSOR,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+) AS
+BEGIN
+    OPEN O_DATA FOR
+        SELECT 
+            R.REA_Registro_Asistencia,
+            R.EMP_Empleado,
+            E.EMP_Primer_Nombre || ' ' || E.EMP_Primer_Apellido AS EMPLEADO,
+            R.REA_Fecha,
+            R.REA_Hora_Entrada,
+            R.REA_Hora_Salida,
+            R.REA_Observaciones
+        FROM MUE_REGISTRO_ASISTENCIA R
+        JOIN MUE_EMPLEADO E ON E.EMP_Empleado = R.EMP_Empleado
+        WHERE (P_EMP IS NULL OR R.EMP_Empleado = P_EMP)
+        ORDER BY R.REA_Registro_Asistencia DESC;
+
+    O_COD_RET := 0;
+    O_MSG := 'OK';
+
+EXCEPTION
+    WHEN OTHERS THEN
+        O_COD_RET := -1;
+        O_MSG := 'Error al listar: ' || SQLERRM;
+END;
+
+--------------------------------------------------
+
+-- 🔹 OBTENER
+PROCEDURE PR_REA_OBTENER(
+    P_ID IN NUMBER,
+    O_DATA OUT SYS_REFCURSOR,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+) AS
+BEGIN
+    OPEN O_DATA FOR
+        SELECT *
+        FROM MUE_REGISTRO_ASISTENCIA
+        WHERE REA_Registro_Asistencia = P_ID;
+
+    O_COD_RET := 0;
+    O_MSG := 'OK';
+
+EXCEPTION
+    WHEN OTHERS THEN
+        O_COD_RET := -1;
+        O_MSG := 'Error al obtener: ' || SQLERRM;
+END;
+
+--------------------------------------------------
+
+-- 🔹 ELIMINAR
+PROCEDURE PR_REA_ELIMINAR(
+    P_ID IN NUMBER,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+) AS
+BEGIN
+    DELETE FROM MUE_REGISTRO_ASISTENCIA
+    WHERE REA_Registro_Asistencia = P_ID;
+
+    IF SQL%ROWCOUNT = 0 THEN
+        O_COD_RET := 1;
+        O_MSG := 'No existe el registro';
+        RETURN;
+    END IF;
+
+    O_COD_RET := 0;
+    O_MSG := 'Eliminado correctamente';
+
+EXCEPTION
+    WHEN OTHERS THEN
+        O_COD_RET := -1;
+        O_MSG := 'Error al eliminar: ' || SQLERRM;
+END;
+
+-- =========================
+-- CONTRATO
+-- =========================
+
+PROCEDURE PR_CTR_INSERTAR(
+    P_EMP IN NUMBER,
+    P_PUE IN NUMBER,
+    P_FECHA_INICIO IN DATE,
+    P_FECHA_FIN IN DATE,
+    P_SALARIO IN NUMBER,
+    P_MONEDA IN VARCHAR2,
+    P_ESTADO IN NUMBER,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+) AS
+    V_EXISTE NUMBER;
+BEGIN
+    -- Validaciones obligatorias
+    IF P_EMP IS NULL OR P_PUE IS NULL OR P_FECHA_INICIO IS NULL THEN
+        O_COD_RET := 1;
+        O_MSG := 'Empleado, puesto y fecha inicio son obligatorios';
+        RETURN;
+    END IF;
+
+    -- Validar empleado
+    SELECT COUNT(*) INTO V_EXISTE
+    FROM MUE_EMPLEADO
+    WHERE EMP_Empleado = P_EMP;
+
+    IF V_EXISTE = 0 THEN
+        O_COD_RET := 1;
+        O_MSG := 'Empleado no existe';
+        RETURN;
+    END IF;
+
+    -- Validar puesto
+    SELECT COUNT(*) INTO V_EXISTE
+    FROM MUE_PUESTO
+    WHERE PUE_Puesto = P_PUE;
+
+    IF V_EXISTE = 0 THEN
+        O_COD_RET := 1;
+        O_MSG := 'Puesto no existe';
+        RETURN;
+    END IF;
+
+    -- Validar fechas
+    IF P_FECHA_FIN IS NOT NULL AND P_FECHA_FIN < P_FECHA_INICIO THEN
+        O_COD_RET := 1;
+        O_MSG := 'Fecha fin inválida';
+        RETURN;
+    END IF;
+
+    -- Validar estado (0 o 1)
+    IF P_ESTADO NOT IN (0,1) THEN
+        O_COD_RET := 1;
+        O_MSG := 'Estado inválido';
+        RETURN;
+    END IF;
+
+    -- 🚫 Evitar múltiples contratos activos
+    IF P_ESTADO = 1 THEN
+        SELECT COUNT(*) INTO V_EXISTE
+        FROM MUE_CONTRATO
+        WHERE EMP_Empleado = P_EMP
+          AND CTR_Estado = 1;
+
+        IF V_EXISTE > 0 THEN
+            O_COD_RET := 1;
+            O_MSG := 'Empleado ya tiene contrato activo';
+            RETURN;
+        END IF;
+    END IF;
+
+    INSERT INTO MUE_CONTRATO (
+        EMP_Empleado,
+        PUE_Puesto,
+        CTR_Fecha_Inicio,
+        CTR_Fecha_Fin,
+        CTR_Salario_Base,
+        CTR_Moneda,
+        CTR_Estado,
+        CTR_Created_At
+    ) VALUES (
+        P_EMP,
+        P_PUE,
+        P_FECHA_INICIO,
+        P_FECHA_FIN,
+        P_SALARIO,
+        P_MONEDA,
+        P_ESTADO,
+        SYSTIMESTAMP
+    );
+
+    O_COD_RET := 0;
+    O_MSG := 'Contrato creado correctamente';
+
+EXCEPTION
+    WHEN OTHERS THEN
+        O_COD_RET := -1;
+        O_MSG := 'Error al insertar: ' || SQLERRM;
+END;
+
+--------------------------------------------------
+
+PROCEDURE PR_CTR_LISTAR(
+    P_EMP IN NUMBER,
+    O_DATA OUT SYS_REFCURSOR,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+) AS
+BEGIN
+    OPEN O_DATA FOR
+        SELECT 
+            C.CTR_Contrato,
+            C.EMP_Empleado,
+            E.EMP_Primer_Nombre || ' ' || E.EMP_Primer_Apellido AS EMPLEADO,
+            C.PUE_Puesto,
+            P.PUE_Titulo,
+            C.CTR_Fecha_Inicio,
+            C.CTR_Fecha_Fin,
+            C.CTR_Salario_Base,
+            C.CTR_Moneda,
+            C.CTR_Estado
+        FROM MUE_CONTRATO C
+        JOIN MUE_EMPLEADO E ON E.EMP_Empleado = C.EMP_Empleado
+        JOIN MUE_PUESTO P ON P.PUE_Puesto = C.PUE_Puesto
+        WHERE (P_EMP IS NULL OR C.EMP_Empleado = P_EMP)
+        ORDER BY C.CTR_Contrato DESC;
+
+    O_COD_RET := 0;
+    O_MSG := 'OK';
+
+EXCEPTION
+    WHEN OTHERS THEN
+        O_COD_RET := -1;
+        O_MSG := 'Error al listar: ' || SQLERRM;
+END;
+
+--------------------------------------------------
+
+PROCEDURE PR_CTR_OBTENER(
+    P_ID IN NUMBER,
+    O_DATA OUT SYS_REFCURSOR,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+) AS
+BEGIN
+    OPEN O_DATA FOR
+        SELECT *
+        FROM MUE_CONTRATO
+        WHERE CTR_Contrato = P_ID;
+
+    O_COD_RET := 0;
+    O_MSG := 'OK';
+
+EXCEPTION
+    WHEN OTHERS THEN
+        O_COD_RET := -1;
+        O_MSG := 'Error al obtener: ' || SQLERRM;
+END;
+
+--------------------------------------------------
+
+PROCEDURE PR_CTR_ACTUALIZAR(
+    P_ID IN NUMBER,
+    P_PUE IN NUMBER,
+    P_FECHA_INICIO IN DATE,
+    P_FECHA_FIN IN DATE,
+    P_SALARIO IN NUMBER,
+    P_MONEDA IN VARCHAR2,
+    P_ESTADO IN NUMBER,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+) AS
+    V_EMP NUMBER;
+    V_EXISTE NUMBER;
+BEGIN
+    -- Obtener empleado del contrato
+    SELECT EMP_Empleado INTO V_EMP
+    FROM MUE_CONTRATO
+    WHERE CTR_Contrato = P_ID;
+
+    -- Validar fechas
+    IF P_FECHA_FIN IS NOT NULL AND P_FECHA_FIN < P_FECHA_INICIO THEN
+        O_COD_RET := 1;
+        O_MSG := 'Fechas inválidas';
+        RETURN;
+    END IF;
+
+    -- Validar único activo
+    IF P_ESTADO = 1 THEN
+        SELECT COUNT(*) INTO V_EXISTE
+        FROM MUE_CONTRATO
+        WHERE EMP_Empleado = V_EMP
+          AND CTR_Estado = 1
+          AND CTR_Contrato <> P_ID;
+
+        IF V_EXISTE > 0 THEN
+            O_COD_RET := 1;
+            O_MSG := 'Ya existe otro contrato activo';
+            RETURN;
+        END IF;
+    END IF;
+
+    UPDATE MUE_CONTRATO
+    SET PUE_Puesto = P_PUE,
+        CTR_Fecha_Inicio = P_FECHA_INICIO,
+        CTR_Fecha_Fin = P_FECHA_FIN,
+        CTR_Salario_Base = P_SALARIO,
+        CTR_Moneda = P_MONEDA,
+        CTR_Estado = P_ESTADO,
+        CTR_Updated_At = SYSTIMESTAMP
+    WHERE CTR_Contrato = P_ID;
+
+    IF SQL%ROWCOUNT = 0 THEN
+        O_COD_RET := 1;
+        O_MSG := 'No existe el contrato';
+        RETURN;
+    END IF;
+
+    O_COD_RET := 0;
+    O_MSG := 'Contrato actualizado';
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        O_COD_RET := 1;
+        O_MSG := 'Contrato no encontrado';
+    WHEN OTHERS THEN
+        O_COD_RET := -1;
+        O_MSG := 'Error al actualizar: ' || SQLERRM;
+END;
+
+--------------------------------------------------
+
+PROCEDURE PR_CTR_ELIMINAR(
+    P_ID IN NUMBER,
+    O_COD_RET OUT NUMBER,
+    O_MSG OUT VARCHAR2
+) AS
+BEGIN
+    DELETE FROM MUE_CONTRATO
+    WHERE CTR_Contrato = P_ID;
+
+    IF SQL%ROWCOUNT = 0 THEN
+        O_COD_RET := 1;
+        O_MSG := 'No existe el contrato';
+        RETURN;
+    END IF;
+
+    O_COD_RET := 0;
+    O_MSG := 'Contrato eliminado';
+
+EXCEPTION
+    WHEN OTHERS THEN
+        O_COD_RET := -1;
+        O_MSG := 'Error al eliminar: ' || SQLERRM;
+END;
+
+-----------------------------------------
+-- INSERTAR NOMINA
+-----------------------------------------
+PROCEDURE PR_NOM_INSERTAR(
+    P_CONTRATO     IN NUMBER,
+    P_FECHA_INI    IN DATE,
+    P_FECHA_FIN    IN DATE,
+    O_COD_RET      OUT NUMBER,
+    O_MSG          OUT VARCHAR2
+) AS
+    V_EXISTE NUMBER;
+BEGIN
+    -- Validar contrato
+    SELECT COUNT(*) INTO V_EXISTE
+    FROM MUE_CONTRATO
+    WHERE CTR_Contrato = P_CONTRATO;
+
+    IF V_EXISTE = 0 THEN
+        O_COD_RET := 1;
+        O_MSG := 'Contrato no existe';
+        RETURN;
+    END IF;
+
+    IF P_FECHA_INI > P_FECHA_FIN THEN
+        O_COD_RET := 1;
+        O_MSG := 'Fechas inválidas';
+        RETURN;
+    END IF;
+
+    INSERT INTO MUE_NOMINA (
+        CTR_Contrato,
+        NOM_Fecha_Inicio,
+        NOM_Fecha_Fin,
+        NOM_Estado,
+        NOM_Created_At
+    ) VALUES (
+        P_CONTRATO,
+        P_FECHA_INI,
+        P_FECHA_FIN,
+        0, -- abierta
+        SYSTIMESTAMP
+    );
+
+    O_COD_RET := 0;
+    O_MSG := 'Nómina creada correctamente';
+
+EXCEPTION
+    WHEN OTHERS THEN
+        O_COD_RET := -1;
+        O_MSG := 'Error al insertar nómina: ' || SQLERRM;
+END;
+
+--------------------------------------------------
+
+PROCEDURE PR_NOM_LISTAR(
+    O_DATA    OUT SYS_REFCURSOR,
+    O_COD_RET OUT NUMBER,
+    O_MSG     OUT VARCHAR2
+) AS
+BEGIN
+    OPEN O_DATA FOR
+        SELECT *
+        FROM MUE_NOMINA
+        ORDER BY NOM_Nomina DESC;
+
+    O_COD_RET := 0;
+    O_MSG := 'OK';
+
+EXCEPTION
+    WHEN OTHERS THEN
+        O_COD_RET := -1;
+        O_MSG := 'Error al listar: ' || SQLERRM;
+END;
+
+--------------------------------------------------
+
+PROCEDURE PR_NOM_OBTENER(
+    P_ID      IN NUMBER,
+    O_DATA    OUT SYS_REFCURSOR,
+    O_COD_RET OUT NUMBER,
+    O_MSG     OUT VARCHAR2
+) AS
+BEGIN
+    OPEN O_DATA FOR
+        SELECT *
+        FROM MUE_NOMINA
+        WHERE NOM_Nomina = P_ID;
+
+    O_COD_RET := 0;
+    O_MSG := 'OK';
+
+EXCEPTION
+    WHEN OTHERS THEN
+        O_COD_RET := -1;
+        O_MSG := 'Error al obtener: ' || SQLERRM;
+END;
+
+--------------------------------------------------
+
+PROCEDURE PR_NOM_ACTUALIZAR(
+    P_ID           IN NUMBER,
+    P_FECHA_INI    IN DATE,
+    P_FECHA_FIN    IN DATE,
+    O_COD_RET      OUT NUMBER,
+    O_MSG          OUT VARCHAR2
+) AS
+BEGIN
+    UPDATE MUE_NOMINA
+    SET NOM_Fecha_Inicio = P_FECHA_INI,
+        NOM_Fecha_Fin    = P_FECHA_FIN
+    WHERE NOM_Nomina = P_ID
+    AND NOM_Estado = 0; -- solo abiertas
+
+    IF SQL%ROWCOUNT = 0 THEN
+        O_COD_RET := 1;
+        O_MSG := 'No existe o ya está cerrada';
+        RETURN;
+    END IF;
+
+    O_COD_RET := 0;
+    O_MSG := 'Nómina actualizada';
+
+EXCEPTION
+    WHEN OTHERS THEN
+        O_COD_RET := -1;
+        O_MSG := 'Error al actualizar: ' || SQLERRM;
+END;
+
+--------------------------------------------------
+
+PROCEDURE PR_NOM_ELIMINAR(
+    P_ID      IN NUMBER,
+    O_COD_RET OUT NUMBER,
+    O_MSG     OUT VARCHAR2
+) AS
+BEGIN
+    DELETE FROM MUE_NOMINA
+    WHERE NOM_Nomina = P_ID
+    AND NOM_Estado = 0;
+
+    IF SQL%ROWCOUNT = 0 THEN
+        O_COD_RET := 1;
+        O_MSG := 'No existe o ya está cerrada';
+        RETURN;
+    END IF;
+
+    O_COD_RET := 0;
+    O_MSG := 'Nómina eliminada';
+
+EXCEPTION
+    WHEN OTHERS THEN
+        O_COD_RET := -1;
+        O_MSG := 'Error al eliminar: ' || SQLERRM;
+END;
+
+--------------------------------------------------
+-- CALCULAR TOTALES
+--------------------------------------------------
+PROCEDURE PR_NOM_CALCULAR_TOTALES(
+    P_ID      IN NUMBER,
+    O_COD_RET OUT NUMBER,
+    O_MSG     OUT VARCHAR2
+) AS
+    V_DEVENGOS NUMBER := 0;
+    V_DEDUCCIONES NUMBER := 0;
+BEGIN
+    -- Sumar detalles
+    SELECT 
+        NVL(SUM(CASE WHEN CPA_Tipo = 1 THEN DNM_Valor END),0),
+        NVL(SUM(CASE WHEN CPA_Tipo = 2 THEN DNM_Valor END),0)
+    INTO V_DEVENGOS, V_DEDUCCIONES
+    FROM MUE_DETALLE_NOMINA D
+    JOIN MUE_CONCEPTO_PAGO C 
+        ON C.CPA_Concepto_Pago = D.CPA_Concepto_Pago
+    WHERE D.NOM_Nomina = P_ID;
+
+    UPDATE MUE_NOMINA
+    SET NOM_Total_Devengos    = V_DEVENGOS,
+        NOM_Total_Deducciones = V_DEDUCCIONES,
+        NOM_Neto_Pagar        = V_DEVENGOS - V_DEDUCCIONES
+    WHERE NOM_Nomina = P_ID;
+
+    O_COD_RET := 0;
+    O_MSG := 'Totales calculados';
+
+EXCEPTION
+    WHEN OTHERS THEN
+        O_COD_RET := -1;
+        O_MSG := 'Error al calcular: ' || SQLERRM;
+END;
+
+--------------------------------------------------
+-- CERRAR NOMINA
+--------------------------------------------------
+PROCEDURE PR_NOM_CERRAR(
+    P_ID      IN NUMBER,
+    O_COD_RET OUT NUMBER,
+    O_MSG     OUT VARCHAR2
+) AS
+BEGIN
+    -- Calcular antes de cerrar
+    PR_NOM_CALCULAR_TOTALES(P_ID, O_COD_RET, O_MSG);
+
+    UPDATE MUE_NOMINA
+    SET NOM_Estado = 1,
+        NOM_Fecha_Pago = SYSDATE
+    WHERE NOM_Nomina = P_ID
+    AND NOM_Estado = 0;
+
+    IF SQL%ROWCOUNT = 0 THEN
+        O_COD_RET := 1;
+        O_MSG := 'No existe o ya cerrada';
+        RETURN;
+    END IF;
+
+    O_COD_RET := 0;
+    O_MSG := 'Nómina cerrada correctamente';
+
+EXCEPTION
+    WHEN OTHERS THEN
+        O_COD_RET := -1;
+        O_MSG := 'Error al cerrar nómina: ' || SQLERRM;
+END;
+
+-----------------------------------------
+-- INSERTAR DETALLE NOMINA
+-----------------------------------------
+PROCEDURE PR_DNM_INSERTAR(
+    P_NOMINA        IN NUMBER,
+    P_CONCEPTO      IN NUMBER,
+    P_VALOR         IN NUMBER,
+    P_OBSERVACION   IN VARCHAR2,
+    O_COD_RET       OUT NUMBER,
+    O_MSG           OUT VARCHAR2
+) AS
+    V_EXISTE NUMBER;
+BEGIN
+    -- Validar nómina
+    SELECT COUNT(*) INTO V_EXISTE
+    FROM MUE_NOMINA
+    WHERE NOM_Nomina = P_NOMINA
+    AND NOM_Estado = 0;
+
+    IF V_EXISTE = 0 THEN
+        O_COD_RET := 1;
+        O_MSG := 'Nómina no existe o está cerrada';
+        RETURN;
+    END IF;
+
+    -- Validar concepto
+    SELECT COUNT(*) INTO V_EXISTE
+    FROM MUE_CONCEPTO_PAGO
+    WHERE CPA_Concepto_Pago = P_CONCEPTO;
+
+    IF V_EXISTE = 0 THEN
+        O_COD_RET := 1;
+        O_MSG := 'Concepto no existe';
+        RETURN;
+    END IF;
+
+    INSERT INTO MUE_DETALLE_NOMINA (
+        NOM_Nomina,
+        CPA_Concepto_Pago,
+        DNM_Valor,
+        DNM_Observaciones,
+        DNM_Created_At
+    ) VALUES (
+        P_NOMINA,
+        P_CONCEPTO,
+        NVL(P_VALOR,0),
+        P_OBSERVACION,
+        SYSTIMESTAMP
+    );
+
+    -- Recalcular totales
+    PR_NOM_CALCULAR_TOTALES(P_NOMINA, O_COD_RET, O_MSG);
+
+    O_COD_RET := 0;
+    O_MSG := 'Detalle agregado correctamente';
+
+EXCEPTION
+    WHEN OTHERS THEN
+        O_COD_RET := -1;
+        O_MSG := 'Error al insertar detalle: ' || SQLERRM;
+END;
+
+--------------------------------------------------
+
+PROCEDURE PR_DNM_LISTAR(
+    P_NOMINA   IN NUMBER,
+    O_DATA     OUT SYS_REFCURSOR,
+    O_COD_RET  OUT NUMBER,
+    O_MSG      OUT VARCHAR2
+) AS
+BEGIN
+    OPEN O_DATA FOR
+        SELECT 
+            D.DNM_Detalle_Nomina,
+            D.NOM_Nomina,
+            D.CPA_Concepto_Pago,
+            C.CPA_Nombre,
+            C.CPA_Tipo,
+            D.DNM_Valor,
+            D.DNM_Observaciones
+        FROM MUE_DETALLE_NOMINA D
+        JOIN MUE_CONCEPTO_PAGO C 
+            ON C.CPA_Concepto_Pago = D.CPA_Concepto_Pago
+        WHERE D.NOM_Nomina = P_NOMINA
+        ORDER BY D.DNM_Detalle_Nomina DESC;
+
+    O_COD_RET := 0;
+    O_MSG := 'OK';
+
+EXCEPTION
+    WHEN OTHERS THEN
+        O_COD_RET := -1;
+        O_MSG := 'Error al listar: ' || SQLERRM;
+END;
+
+--------------------------------------------------
+
+PROCEDURE PR_DNM_OBTENER(
+    P_ID      IN NUMBER,
+    O_DATA    OUT SYS_REFCURSOR,
+    O_COD_RET OUT NUMBER,
+    O_MSG     OUT VARCHAR2
+) AS
+BEGIN
+    OPEN O_DATA FOR
+        SELECT *
+        FROM MUE_DETALLE_NOMINA
+        WHERE DNM_Detalle_Nomina = P_ID;
+
+    O_COD_RET := 0;
+    O_MSG := 'OK';
+
+EXCEPTION
+    WHEN OTHERS THEN
+        O_COD_RET := -1;
+        O_MSG := 'Error al obtener: ' || SQLERRM;
+END;
+
+--------------------------------------------------
+
+PROCEDURE PR_DNM_ACTUALIZAR(
+    P_ID          IN NUMBER,
+    P_VALOR       IN NUMBER,
+    P_OBSERVACION IN VARCHAR2,
+    O_COD_RET     OUT NUMBER,
+    O_MSG         OUT VARCHAR2
+) AS
+    V_NOMINA NUMBER;
+BEGIN
+    -- Obtener nómina padre
+    SELECT NOM_Nomina
+    INTO V_NOMINA
+    FROM MUE_DETALLE_NOMINA
+    WHERE DNM_Detalle_Nomina = P_ID;
+
+    -- Validar que esté abierta
+    UPDATE MUE_DETALLE_NOMINA D
+    SET DNM_Valor = NVL(P_VALOR,0),
+        DNM_Observaciones = P_OBSERVACION
+    WHERE DNM_Detalle_Nomina = P_ID
+    AND EXISTS (
+        SELECT 1 FROM MUE_NOMINA N
+        WHERE N.NOM_Nomina = D.NOM_Nomina
+        AND N.NOM_Estado = 0
+    );
+
+    IF SQL%ROWCOUNT = 0 THEN
+        O_COD_RET := 1;
+        O_MSG := 'No existe o nómina cerrada';
+        RETURN;
+    END IF;
+
+    -- Recalcular totales
+    PR_NOM_CALCULAR_TOTALES(V_NOMINA, O_COD_RET, O_MSG);
+
+    O_COD_RET := 0;
+    O_MSG := 'Detalle actualizado';
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        O_COD_RET := 1;
+        O_MSG := 'Detalle no encontrado';
+    WHEN OTHERS THEN
+        O_COD_RET := -1;
+        O_MSG := 'Error al actualizar: ' || SQLERRM;
+END;
+
+--------------------------------------------------
+
+PROCEDURE PR_DNM_ELIMINAR(
+    P_ID      IN NUMBER,
+    O_COD_RET OUT NUMBER,
+    O_MSG     OUT VARCHAR2
+) AS
+    V_NOMINA NUMBER;
+BEGIN
+    -- Obtener nómina padre
+    SELECT NOM_Nomina
+    INTO V_NOMINA
+    FROM MUE_DETALLE_NOMINA
+    WHERE DNM_Detalle_Nomina = P_ID;
+
+    DELETE FROM MUE_DETALLE_NOMINA D
+    WHERE DNM_Detalle_Nomina = P_ID
+    AND EXISTS (
+        SELECT 1 FROM MUE_NOMINA N
+        WHERE N.NOM_Nomina = D.NOM_Nomina
+        AND N.NOM_Estado = 0
+    );
+
+    IF SQL%ROWCOUNT = 0 THEN
+        O_COD_RET := 1;
+        O_MSG := 'No existe o nómina cerrada';
+        RETURN;
+    END IF;
+
+    -- Recalcular totales
+    PR_NOM_CALCULAR_TOTALES(V_NOMINA, O_COD_RET, O_MSG);
+
+    O_COD_RET := 0;
+    O_MSG := 'Detalle eliminado';
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        O_COD_RET := 1;
+        O_MSG := 'Detalle no encontrado';
+    WHEN OTHERS THEN
+        O_COD_RET := -1;
+        O_MSG := 'Error al eliminar: ' || SQLERRM;
 END;
 
 END PKG_MUE_G3_COMPRAS_INV_RRHH;
