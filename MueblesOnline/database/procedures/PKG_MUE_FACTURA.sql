@@ -1,4 +1,8 @@
-CREATE OR REPLACE PACKAGE PKG_MUE_FACTURA AS
+CREATE OR REPLACE PACKAGE BODY PKG_MUE_FACTURA AS
+
+  C_OK    CONSTANT NUMBER := 0;
+  C_ERR   CONSTANT NUMBER := 1;
+  C_NOFND CONSTANT NUMBER := 2;
 
   PROCEDURE PR_FACTURA_INSERTAR (
     P_FAC_NO_FACTURA      IN VARCHAR2,
@@ -12,59 +16,6 @@ CREATE OR REPLACE PACKAGE PKG_MUE_FACTURA AS
     O_FAC_FACTURA         OUT NUMBER,
     O_COD_RET             OUT NUMBER,
     O_MSG                 OUT VARCHAR2
-  );
-
-  PROCEDURE PR_FACTURA_ACTUALIZAR (
-    P_FAC_FACTURA         IN NUMBER,
-    P_EMP_EMPLEADO        IN NUMBER,
-    P_FAC_SUBTOTAL        IN NUMBER,
-    P_FAC_DESCUENTO       IN NUMBER,
-    P_FAC_TOTAL           IN NUMBER,
-    P_MPA_METODO_PAGO     IN NUMBER,
-    P_EST_ESTABLECIMIENTO IN NUMBER,
-    O_COD_RET             OUT NUMBER,
-    O_MSG                 OUT VARCHAR2
-  );
-
-  PROCEDURE PR_FACTURA_ELIMINAR (
-    P_FAC_FACTURA IN NUMBER,
-    O_COD_RET     OUT NUMBER,
-    O_MSG         OUT VARCHAR2
-  );
-
-  PROCEDURE PR_FACTURA_OBTENER (
-    P_FAC_FACTURA IN NUMBER,
-    O_CURSOR      OUT SYS_REFCURSOR,
-    O_COD_RET     OUT NUMBER,
-    O_MSG         OUT VARCHAR2
-  );
-
-  PROCEDURE PR_FACTURA_LISTAR (
-    O_CURSOR   OUT SYS_REFCURSOR,
-    O_COD_RET  OUT NUMBER,
-    O_MSG      OUT VARCHAR2
-  );
-
-END PKG_MUE_FACTURA;
-/
-CREATE OR REPLACE PACKAGE BODY PKG_MUE_FACTURA AS
-
-  C_OK    CONSTANT NUMBER := 0;
-  C_ERR   CONSTANT NUMBER := 1;
-  C_NOFND CONSTANT NUMBER := 2;
-
-  PROCEDURE PR_FACTURA_INSERTAR (
-    P_FAC_NO_FACTURA,
-    P_MOV_ORDEN_VENTA,
-    P_EMP_EMPLEADO,
-    P_FAC_SUBTOTAL,
-    P_FAC_DESCUENTO,
-    P_FAC_TOTAL,
-    P_MPA_METODO_PAGO,
-    P_EST_ESTABLECIMIENTO,
-    O_FAC_FACTURA OUT NUMBER,
-    O_COD_RET OUT NUMBER,
-    O_MSG OUT VARCHAR2
   ) IS
     V_EXISTE NUMBER;
   BEGIN
@@ -99,6 +50,19 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUE_FACTURA AS
       IF V_EXISTE = 0 THEN
         O_COD_RET := C_ERR;
         O_MSG := 'Empleado no válido.';
+        RETURN;
+      END IF;
+    END IF;
+
+    IF P_EST_ESTABLECIMIENTO IS NOT NULL THEN
+      SELECT COUNT(*)
+        INTO V_EXISTE
+        FROM MUE_ESTABLECIMIENTO
+       WHERE EST_Establecimiento = P_EST_ESTABLECIMIENTO;
+
+      IF V_EXISTE = 0 THEN
+        O_COD_RET := C_ERR;
+        O_MSG := 'El establecimiento especificado no existe.';
         RETURN;
       END IF;
     END IF;
@@ -140,15 +104,15 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUE_FACTURA AS
 
 
   PROCEDURE PR_FACTURA_ACTUALIZAR (
-    P_FAC_FACTURA,
-    P_EMP_EMPLEADO,
-    P_FAC_SUBTOTAL,
-    P_FAC_DESCUENTO,
-    P_FAC_TOTAL,
-    P_MPA_METODO_PAGO,
-    P_EST_ESTABLECIMIENTO,
-    O_COD_RET OUT NUMBER,
-    O_MSG OUT VARCHAR2
+    P_FAC_FACTURA         IN NUMBER,
+    P_EMP_EMPLEADO        IN NUMBER,
+    P_FAC_SUBTOTAL        IN NUMBER,
+    P_FAC_DESCUENTO       IN NUMBER,
+    P_FAC_TOTAL           IN NUMBER,
+    P_MPA_METODO_PAGO     IN NUMBER,
+    P_EST_ESTABLECIMIENTO IN NUMBER,
+    O_COD_RET             OUT NUMBER,
+    O_MSG                 OUT VARCHAR2
   ) IS
     V_EXISTE NUMBER;
   BEGIN
@@ -163,12 +127,67 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUE_FACTURA AS
       RETURN;
     END IF;
 
+    IF P_MPA_METODO_PAGO IS NULL THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'El método de pago es obligatorio.';
+      RETURN;
+    END IF;
+
+    SELECT COUNT(*)
+      INTO V_EXISTE
+      FROM MUE_METODO_PAGO
+     WHERE MPA_Metodo_Pago = P_MPA_METODO_PAGO;
+
+    IF V_EXISTE = 0 THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'Método de pago no válido.';
+      RETURN;
+    END IF;
+
+    IF P_FAC_SUBTOTAL IS NULL THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'El subtotal es obligatorio.';
+      RETURN;
+    END IF;
+
+    IF P_FAC_TOTAL IS NULL THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'El total es obligatorio.';
+      RETURN;
+    END IF;
+
+    IF P_EMP_EMPLEADO IS NOT NULL THEN
+      SELECT COUNT(*)
+        INTO V_EXISTE
+        FROM MUE_EMPLEADO
+       WHERE EMP_Empleado = P_EMP_EMPLEADO;
+
+      IF V_EXISTE = 0 THEN
+        O_COD_RET := C_ERR;
+        O_MSG := 'Empleado no válido.';
+        RETURN;
+      END IF;
+    END IF;
+
+    IF P_EST_ESTABLECIMIENTO IS NOT NULL THEN
+      SELECT COUNT(*)
+        INTO V_EXISTE
+        FROM MUE_ESTABLECIMIENTO
+       WHERE EST_Establecimiento = P_EST_ESTABLECIMIENTO;
+
+      IF V_EXISTE = 0 THEN
+        O_COD_RET := C_ERR;
+        O_MSG := 'El establecimiento especificado no existe.';
+        RETURN;
+      END IF;
+    END IF;
+
     UPDATE MUE_FACTURA
-       SET EMP_Empleado = P_EMP_EMPLEADO,
-           FAC_Subtotal = P_FAC_SUBTOTAL,
-           FAC_Descuento = P_FAC_DESCUENTO,
-           FAC_Total = P_FAC_TOTAL,
-           MPA_Metodo_Pago = P_MPA_METODO_PAGO,
+       SET EMP_Empleado        = P_EMP_EMPLEADO,
+           FAC_Subtotal        = P_FAC_SUBTOTAL,
+           FAC_Descuento       = P_FAC_DESCUENTO,
+           FAC_Total           = P_FAC_TOTAL,
+           MPA_Metodo_Pago     = P_MPA_METODO_PAGO,
            EST_Establecimiento = P_EST_ESTABLECIMIENTO
      WHERE FAC_Factura = P_FAC_FACTURA;
 
@@ -184,8 +203,8 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUE_FACTURA AS
 
   PROCEDURE PR_FACTURA_ELIMINAR (
     P_FAC_FACTURA IN NUMBER,
-    O_COD_RET OUT NUMBER,
-    O_MSG OUT VARCHAR2
+    O_COD_RET     OUT NUMBER,
+    O_MSG         OUT VARCHAR2
   ) IS
   BEGIN
     DELETE FROM MUE_FACTURA
@@ -199,6 +218,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUE_FACTURA AS
 
     O_COD_RET := C_OK;
     O_MSG := 'Factura eliminada correctamente.';
+
   EXCEPTION
     WHEN OTHERS THEN
       O_COD_RET := C_ERR;
@@ -208,13 +228,24 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUE_FACTURA AS
 
   PROCEDURE PR_FACTURA_OBTENER (
     P_FAC_FACTURA IN NUMBER,
-    O_CURSOR OUT SYS_REFCURSOR,
-    O_COD_RET OUT NUMBER,
-    O_MSG OUT VARCHAR2
+    O_CURSOR      OUT SYS_REFCURSOR,
+    O_COD_RET     OUT NUMBER,
+    O_MSG         OUT VARCHAR2
   ) IS
   BEGIN
+    -- [FIX #15] Columnas explícitas en lugar de SELECT *
     OPEN O_CURSOR FOR
-      SELECT *
+      SELECT FAC_Factura,
+             FAC_No_Factura,
+             FAC_Fecha,
+             MOV_Orden_Venta,
+             EMP_Empleado,
+             FAC_Subtotal,
+             FAC_Descuento,
+             FAC_Total,
+             MPA_Metodo_Pago,
+             EST_Establecimiento,
+             FAC_Created_At
         FROM MUE_FACTURA
        WHERE FAC_Factura = P_FAC_FACTURA;
 
@@ -224,13 +255,24 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUE_FACTURA AS
 
 
   PROCEDURE PR_FACTURA_LISTAR (
-    O_CURSOR OUT SYS_REFCURSOR,
+    O_CURSOR  OUT SYS_REFCURSOR,
     O_COD_RET OUT NUMBER,
-    O_MSG OUT VARCHAR2
+    O_MSG     OUT VARCHAR2
   ) IS
   BEGIN
+    -- [FIX #15] Columnas explícitas en lugar de SELECT *
     OPEN O_CURSOR FOR
-      SELECT *
+      SELECT FAC_Factura,
+             FAC_No_Factura,
+             FAC_Fecha,
+             MOV_Orden_Venta,
+             EMP_Empleado,
+             FAC_Subtotal,
+             FAC_Descuento,
+             FAC_Total,
+             MPA_Metodo_Pago,
+             EST_Establecimiento,
+             FAC_Created_At
         FROM MUE_FACTURA
        ORDER BY FAC_Fecha DESC;
 

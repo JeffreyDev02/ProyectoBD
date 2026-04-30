@@ -276,7 +276,6 @@
     <Content Include="database\procedures\PKG_MUE_ORDEN_VENTA.sql" />
     <Content Include="database\procedures\PKG_MUE_PRECIO.sql" />
     <Content Include="database\procedures\PKG_MUE_PRODUCTO.sql" />
-    <Content Include="database\procedures\PKG_MUE_USUARIO.sql" />
     <Content Include="database\testing\dadito.sql" />
     <Content Include="database\testing\TEST_PKG_MUE_CIERRE_CAJA.sql" />
     <Content Include="database\testing\TEST_PKG_MUE_CUENTA.sql" />
@@ -293,7 +292,6 @@
     <Content Include="database\testing\TEST_PKG_MUE_PRODUCTO.sql" />
     <Content Include="database\testing\TEST_PKG_MUE_SEDE.sql" />
     <None Include="packages.config" />
-    <Content Include="database\testing\TEST_PKG_MUE_USUARIO.sql" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
     <Content Include="Scripts\bootstrap.esm.js" />

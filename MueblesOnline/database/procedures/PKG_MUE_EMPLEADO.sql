@@ -1,75 +1,3 @@
--- =============================================================================
--- PAQUETE: PKG_MUE_EMPLEADO
--- TABLA: MUE_EMPLEADO
--- =============================================================================
-
-CREATE OR REPLACE PACKAGE PKG_MUE_EMPLEADO AS
-
-  PROCEDURE PR_EMPLEADO_INSERTAR (
-    P_EMP_ACTIVO           IN NUMBER,
-    P_EMP_NUMERO_DOCUMENTO IN NUMBER,
-    P_EMP_PRIMER_NOMBRE    IN VARCHAR2,
-    P_EMP_SEGUNDO_NOMBRE   IN VARCHAR2,
-    P_EMP_PRIMER_APELLIDO  IN VARCHAR2,
-    P_EMP_SEGUNDO_APELLIDO IN VARCHAR2,
-    P_EMP_FECHA_NAC        IN DATE,
-    P_EMP_TEL_RESIDENCIA   IN NUMBER,
-    P_EMP_TEL_CELULAR      IN NUMBER,
-    P_EMP_ZONA             IN NUMBER,
-    P_EMP_MUNICIPIO        IN VARCHAR2,
-    P_EMP_DEPARTAMENTO_TXT IN VARCHAR2,
-    P_EMP_CIUDAD           IN VARCHAR2,
-    P_EMP_CORREO           IN VARCHAR2,
-    P_EMP_NIT              IN NUMBER,
-    P_DEP_DEPARTAMENTO     IN NUMBER,
-    O_EMP_EMPLEADO         OUT NUMBER,
-    O_COD_RET              OUT NUMBER,
-    O_MSG                  OUT VARCHAR2
-  );
-
-  PROCEDURE PR_EMPLEADO_ACTUALIZAR (
-    P_EMP_EMPLEADO         IN NUMBER,
-    P_EMP_ACTIVO           IN NUMBER,
-    P_EMP_NUMERO_DOCUMENTO IN NUMBER,
-    P_EMP_PRIMER_NOMBRE    IN VARCHAR2,
-    P_EMP_SEGUNDO_NOMBRE   IN VARCHAR2,
-    P_EMP_PRIMER_APELLIDO  IN VARCHAR2,
-    P_EMP_SEGUNDO_APELLIDO IN VARCHAR2,
-    P_EMP_FECHA_NAC        IN DATE,
-    P_EMP_TEL_RESIDENCIA   IN NUMBER,
-    P_EMP_TEL_CELULAR      IN NUMBER,
-    P_EMP_ZONA             IN NUMBER,
-    P_EMP_MUNICIPIO        IN VARCHAR2,
-    P_EMP_DEPARTAMENTO_TXT IN VARCHAR2,
-    P_EMP_CIUDAD           IN VARCHAR2,
-    P_EMP_CORREO           IN VARCHAR2,
-    P_EMP_NIT              IN NUMBER,
-    P_DEP_DEPARTAMENTO     IN NUMBER,
-    O_COD_RET              OUT NUMBER,
-    O_MSG                  OUT VARCHAR2
-  );
-
-  PROCEDURE PR_EMPLEADO_ELIMINAR (
-    P_EMP_EMPLEADO IN NUMBER,
-    O_COD_RET      OUT NUMBER,
-    O_MSG          OUT VARCHAR2
-  );
-
-  PROCEDURE PR_EMPLEADO_OBTENER (
-    P_EMP_EMPLEADO IN NUMBER,
-    O_CURSOR       OUT SYS_REFCURSOR,
-    O_COD_RET      OUT NUMBER,
-    O_MSG          OUT VARCHAR2
-  );
-
-  PROCEDURE PR_EMPLEADO_LISTAR (
-    O_CURSOR   OUT SYS_REFCURSOR,
-    O_COD_RET  OUT NUMBER,
-    O_MSG      OUT VARCHAR2
-  );
-
-END PKG_MUE_EMPLEADO;
-/
 CREATE OR REPLACE PACKAGE BODY PKG_MUE_EMPLEADO AS
 
   C_OK    CONSTANT NUMBER := 0;
@@ -102,9 +30,10 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUE_EMPLEADO AS
     O_COD_RET := C_ERR;
     O_MSG := NULL;
 
-    SELECT COUNT(*) INTO V_EXISTE
-    FROM MUE_DEPARTAMENTO
-    WHERE DEP_Departamento = P_DEP_DEPARTAMENTO;
+    SELECT COUNT(*)
+      INTO V_EXISTE
+      FROM MUE_DEPARTAMENTO
+     WHERE DEP_Departamento = P_DEP_DEPARTAMENTO;
 
     IF V_EXISTE = 0 THEN
       O_MSG := 'Departamento inválido.';
@@ -160,6 +89,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUE_EMPLEADO AS
       O_MSG := 'Error al insertar empleado: ' || SQLERRM;
   END PR_EMPLEADO_INSERTAR;
 
+
   PROCEDURE PR_EMPLEADO_ACTUALIZAR (
     P_EMP_EMPLEADO         IN NUMBER,
     P_EMP_ACTIVO           IN NUMBER,
@@ -181,25 +111,38 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUE_EMPLEADO AS
     O_COD_RET              OUT NUMBER,
     O_MSG                  OUT VARCHAR2
   ) IS
+    V_EXISTE NUMBER;
   BEGIN
+    -- [FIX #11] Revalidar departamento también en UPDATE
+    SELECT COUNT(*)
+      INTO V_EXISTE
+      FROM MUE_DEPARTAMENTO
+     WHERE DEP_Departamento = P_DEP_DEPARTAMENTO;
+
+    IF V_EXISTE = 0 THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'Departamento inválido.';
+      RETURN;
+    END IF;
+
     UPDATE MUE_EMPLEADO
-       SET EMP_Activo = P_EMP_ACTIVO,
-           EMP_Numero_Documento = P_EMP_NUMERO_DOCUMENTO,
-           EMP_Primer_Nombre = P_EMP_PRIMER_NOMBRE,
-           EMP_Segundo_Nombre = P_EMP_SEGUNDO_NOMBRE,
-           EMP_Primer_Apellido = P_EMP_PRIMER_APELLIDO,
-           EMP_Segundo_Apellido = P_EMP_SEGUNDO_APELLIDO,
-           EMP_Fecha_De_Nacimiento = P_EMP_FECHA_NAC,
-           EMP_Telefono_Residencia = P_EMP_TEL_RESIDENCIA,
-           EMP_Telefono_Celular = P_EMP_TEL_CELULAR,
-           EMP_Zona = P_EMP_ZONA,
-           EMP_Municipio = P_EMP_MUNICIPIO,
-           EMP_Departamento = P_EMP_DEPARTAMENTO_TXT,
-           EMP_Ciudad = P_EMP_CIUDAD,
-           EMP_Correo = P_EMP_CORREO,
-           EMP_Nit = P_EMP_NIT,
-           DEP_Departamento = P_DEP_DEPARTAMENTO,
-           EMP_Updated_At = SYSTIMESTAMP
+       SET EMP_Activo               = P_EMP_ACTIVO,
+           EMP_Numero_Documento     = P_EMP_NUMERO_DOCUMENTO,
+           EMP_Primer_Nombre        = P_EMP_PRIMER_NOMBRE,
+           EMP_Segundo_Nombre       = P_EMP_SEGUNDO_NOMBRE,
+           EMP_Primer_Apellido      = P_EMP_PRIMER_APELLIDO,
+           EMP_Segundo_Apellido     = P_EMP_SEGUNDO_APELLIDO,
+           EMP_Fecha_De_Nacimiento  = P_EMP_FECHA_NAC,
+           EMP_Telefono_Residencia  = P_EMP_TEL_RESIDENCIA,
+           EMP_Telefono_Celular     = P_EMP_TEL_CELULAR,
+           EMP_Zona                 = P_EMP_ZONA,
+           EMP_Municipio            = P_EMP_MUNICIPIO,
+           EMP_Departamento         = P_EMP_DEPARTAMENTO_TXT,
+           EMP_Ciudad               = P_EMP_CIUDAD,
+           EMP_Correo               = P_EMP_CORREO,
+           EMP_Nit                  = P_EMP_NIT,
+           DEP_Departamento         = P_DEP_DEPARTAMENTO,
+           EMP_Updated_At           = SYSTIMESTAMP
      WHERE EMP_Empleado = P_EMP_EMPLEADO;
 
     IF SQL%ROWCOUNT = 0 THEN
@@ -209,7 +152,13 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUE_EMPLEADO AS
       O_COD_RET := C_OK;
       O_MSG := 'Empleado actualizado correctamente.';
     END IF;
+
+  EXCEPTION
+    WHEN OTHERS THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'Error al actualizar empleado: ' || SQLERRM;
   END PR_EMPLEADO_ACTUALIZAR;
+
 
   PROCEDURE PR_EMPLEADO_ELIMINAR (
     P_EMP_EMPLEADO IN NUMBER,
@@ -218,7 +167,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUE_EMPLEADO AS
   ) IS
   BEGIN
     DELETE FROM MUE_EMPLEADO
-    WHERE EMP_Empleado = P_EMP_EMPLEADO;
+     WHERE EMP_Empleado = P_EMP_EMPLEADO;
 
     IF SQL%ROWCOUNT = 0 THEN
       O_COD_RET := C_NOFND;
@@ -227,7 +176,13 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUE_EMPLEADO AS
       O_COD_RET := C_OK;
       O_MSG := 'Empleado eliminado correctamente.';
     END IF;
+
+  EXCEPTION
+    WHEN OTHERS THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'Error al eliminar empleado: ' || SQLERRM;
   END PR_EMPLEADO_ELIMINAR;
+
 
   PROCEDURE PR_EMPLEADO_OBTENER (
     P_EMP_EMPLEADO IN NUMBER,
@@ -236,8 +191,27 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUE_EMPLEADO AS
     O_MSG          OUT VARCHAR2
   ) IS
   BEGIN
+    -- [FIX #15] Columnas explícitas en lugar de SELECT *
     OPEN O_CURSOR FOR
-      SELECT *
+      SELECT EMP_Empleado,
+             EMP_Activo,
+             EMP_Numero_Documento,
+             EMP_Primer_Nombre,
+             EMP_Segundo_Nombre,
+             EMP_Primer_Apellido,
+             EMP_Segundo_Apellido,
+             EMP_Fecha_De_Nacimiento,
+             EMP_Telefono_Residencia,
+             EMP_Telefono_Celular,
+             EMP_Zona,
+             EMP_Municipio,
+             EMP_Departamento,
+             EMP_Ciudad,
+             EMP_Correo,
+             EMP_Nit,
+             DEP_Departamento,
+             EMP_Created_At,
+             EMP_Updated_At
         FROM MUE_EMPLEADO
        WHERE EMP_Empleado = P_EMP_EMPLEADO;
 
@@ -245,14 +219,34 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUE_EMPLEADO AS
     O_MSG := 'OK';
   END PR_EMPLEADO_OBTENER;
 
+
   PROCEDURE PR_EMPLEADO_LISTAR (
-    O_CURSOR   OUT SYS_REFCURSOR,
-    O_COD_RET  OUT NUMBER,
-    O_MSG      OUT VARCHAR2
+    O_CURSOR  OUT SYS_REFCURSOR,
+    O_COD_RET OUT NUMBER,
+    O_MSG     OUT VARCHAR2
   ) IS
   BEGIN
+    -- [FIX #15] Columnas explícitas en lugar de SELECT *
     OPEN O_CURSOR FOR
-      SELECT *
+      SELECT EMP_Empleado,
+             EMP_Activo,
+             EMP_Numero_Documento,
+             EMP_Primer_Nombre,
+             EMP_Segundo_Nombre,
+             EMP_Primer_Apellido,
+             EMP_Segundo_Apellido,
+             EMP_Fecha_De_Nacimiento,
+             EMP_Telefono_Residencia,
+             EMP_Telefono_Celular,
+             EMP_Zona,
+             EMP_Municipio,
+             EMP_Departamento,
+             EMP_Ciudad,
+             EMP_Correo,
+             EMP_Nit,
+             DEP_Departamento,
+             EMP_Created_At,
+             EMP_Updated_At
         FROM MUE_EMPLEADO
        ORDER BY EMP_Primer_Nombre;
 

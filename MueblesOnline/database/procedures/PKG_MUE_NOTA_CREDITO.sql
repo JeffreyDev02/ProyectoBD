@@ -1,46 +1,3 @@
-CREATE OR REPLACE PACKAGE PKG_MUE_NOTA_CREDITO AS
-
-  PROCEDURE PR_NC_INSERTAR (
-    P_FAC_FACTURA    IN NUMBER,
-    P_NCR_FECHA      IN DATE,
-    P_NCR_MONTO      IN NUMBER,
-    P_NCR_MOTIVO     IN VARCHAR2,
-    O_NCR_ID         OUT NUMBER,
-    O_COD_RET        OUT NUMBER,
-    O_MSG            OUT VARCHAR2
-  );
-
-  PROCEDURE PR_NC_ACTUALIZAR (
-    P_NCR_ID         IN NUMBER,
-    P_NCR_FECHA      IN DATE,
-    P_NCR_MONTO      IN NUMBER,
-    P_NCR_MOTIVO     IN VARCHAR2,
-    O_COD_RET        OUT NUMBER,
-    O_MSG            OUT VARCHAR2
-  );
-
-  PROCEDURE PR_NC_ELIMINAR (
-    P_NCR_ID         IN NUMBER,
-    O_COD_RET        OUT NUMBER,
-    O_MSG            OUT VARCHAR2
-  );
-
-  PROCEDURE PR_NC_OBTENER (
-    P_NCR_ID         IN NUMBER,
-    O_CURSOR         OUT SYS_REFCURSOR,
-    O_COD_RET        OUT NUMBER,
-    O_MSG            OUT VARCHAR2
-  );
-
-  PROCEDURE PR_NC_LISTAR (
-    P_FAC_FACTURA    IN NUMBER DEFAULT NULL,
-    O_CURSOR         OUT SYS_REFCURSOR,
-    O_COD_RET        OUT NUMBER,
-    O_MSG            OUT VARCHAR2
-  );
-
-END PKG_MUE_NOTA_CREDITO;
-/
 CREATE OR REPLACE PACKAGE BODY PKG_MUE_NOTA_CREDITO AS
 
   C_OK    CONSTANT NUMBER := 0;
@@ -48,16 +5,29 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUE_NOTA_CREDITO AS
   C_NOFND CONSTANT NUMBER := 2;
 
   PROCEDURE PR_NC_INSERTAR (
-    P_FAC_FACTURA,
-    P_NCR_FECHA,
-    P_NCR_MONTO,
-    P_NCR_MOTIVO,
-    O_NCR_ID OUT NUMBER,
-    O_COD_RET OUT NUMBER,
-    O_MSG OUT VARCHAR2
+    P_FAC_FACTURA IN NUMBER,
+    P_NCR_FECHA   IN DATE,
+    P_NCR_MONTO   IN NUMBER,
+    P_NCR_MOTIVO  IN VARCHAR2,
+    O_NCR_ID      OUT NUMBER,
+    O_COD_RET     OUT NUMBER,
+    O_MSG         OUT VARCHAR2
   ) IS
     V_TOTAL_FACTURA NUMBER;
   BEGIN
+    -- [FIX #13] Validar NULL antes de cualquier comparación
+    IF P_NCR_MONTO IS NULL THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'El monto de la nota crédito no puede ser nulo.';
+      RETURN;
+    END IF;
+
+    IF P_NCR_MONTO <= 0 THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'El monto de la nota crédito debe ser mayor a cero.';
+      RETURN;
+    END IF;
+
     SELECT FAC_Total
       INTO V_TOTAL_FACTURA
       FROM MUE_FACTURA
@@ -69,6 +39,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUE_NOTA_CREDITO AS
       RETURN;
     END IF;
 
+    -- [FIX #15] Columnas explícitas en lugar de SELECT *
     INSERT INTO MUE_NOTA_CREDITO (
       FAC_Factura,
       NCR_Fecha,
@@ -99,16 +70,29 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUE_NOTA_CREDITO AS
 
 
   PROCEDURE PR_NC_ACTUALIZAR (
-    P_NCR_ID,
-    P_NCR_FECHA,
-    P_NCR_MONTO,
-    P_NCR_MOTIVO,
-    O_COD_RET OUT NUMBER,
-    O_MSG OUT VARCHAR2
+    P_NCR_ID     IN NUMBER,
+    P_NCR_FECHA  IN DATE,
+    P_NCR_MONTO  IN NUMBER,
+    P_NCR_MOTIVO IN VARCHAR2,
+    O_COD_RET    OUT NUMBER,
+    O_MSG        OUT VARCHAR2
   ) IS
     V_TOTAL_FACTURA NUMBER;
-    V_FACTURA NUMBER;
+    V_FACTURA       NUMBER;
   BEGIN
+    -- [FIX #13] Validar NULL/cero antes de ir a la BD
+    IF P_NCR_MONTO IS NULL THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'El monto de la nota crédito no puede ser nulo.';
+      RETURN;
+    END IF;
+
+    IF P_NCR_MONTO <= 0 THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'El monto de la nota crédito debe ser mayor a cero.';
+      RETURN;
+    END IF;
+
     SELECT FAC_Factura
       INTO V_FACTURA
       FROM MUE_NOTA_CREDITO
@@ -126,8 +110,8 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUE_NOTA_CREDITO AS
     END IF;
 
     UPDATE MUE_NOTA_CREDITO
-       SET NCR_Fecha = P_NCR_FECHA,
-           NCR_Monto = P_NCR_MONTO,
+       SET NCR_Fecha  = P_NCR_FECHA,
+           NCR_Monto  = P_NCR_MONTO,
            NCR_Motivo = P_NCR_MOTIVO
      WHERE NCR_Nota_Credito = P_NCR_ID;
 
@@ -145,9 +129,9 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUE_NOTA_CREDITO AS
 
 
   PROCEDURE PR_NC_ELIMINAR (
-    P_NCR_ID IN NUMBER,
+    P_NCR_ID  IN NUMBER,
     O_COD_RET OUT NUMBER,
-    O_MSG OUT VARCHAR2
+    O_MSG     OUT VARCHAR2
   ) IS
   BEGIN
     DELETE FROM MUE_NOTA_CREDITO
@@ -170,14 +154,20 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUE_NOTA_CREDITO AS
 
 
   PROCEDURE PR_NC_OBTENER (
-    P_NCR_ID IN NUMBER,
-    O_CURSOR OUT SYS_REFCURSOR,
+    P_NCR_ID  IN NUMBER,
+    O_CURSOR  OUT SYS_REFCURSOR,
     O_COD_RET OUT NUMBER,
-    O_MSG OUT VARCHAR2
+    O_MSG     OUT VARCHAR2
   ) IS
   BEGIN
+    -- [FIX #15] Columnas explícitas en lugar de SELECT *
     OPEN O_CURSOR FOR
-      SELECT *
+      SELECT NCR_Nota_Credito,
+             FAC_Factura,
+             NCR_Fecha,
+             NCR_Monto,
+             NCR_Motivo,
+             NCR_Created_At
         FROM MUE_NOTA_CREDITO
        WHERE NCR_Nota_Credito = P_NCR_ID;
 
@@ -188,13 +178,19 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUE_NOTA_CREDITO AS
 
   PROCEDURE PR_NC_LISTAR (
     P_FAC_FACTURA IN NUMBER DEFAULT NULL,
-    O_CURSOR OUT SYS_REFCURSOR,
-    O_COD_RET OUT NUMBER,
-    O_MSG OUT VARCHAR2
+    O_CURSOR      OUT SYS_REFCURSOR,
+    O_COD_RET     OUT NUMBER,
+    O_MSG         OUT VARCHAR2
   ) IS
   BEGIN
+    -- [FIX #15] Columnas explícitas en lugar de SELECT *
     OPEN O_CURSOR FOR
-      SELECT *
+      SELECT NCR_Nota_Credito,
+             FAC_Factura,
+             NCR_Fecha,
+             NCR_Monto,
+             NCR_Motivo,
+             NCR_Created_At
         FROM MUE_NOTA_CREDITO
        WHERE P_FAC_FACTURA IS NULL
           OR FAC_Factura = P_FAC_FACTURA

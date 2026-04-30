@@ -1,46 +1,3 @@
-CREATE OR REPLACE PACKAGE PKG_MUE_NOTA_DEBITO AS
-
-  PROCEDURE PR_ND_INSERTAR (
-    P_FAC_FACTURA    IN NUMBER,
-    P_NDB_FECHA      IN DATE,
-    P_NDB_MONTO      IN NUMBER,
-    P_NDB_MOTIVO     IN VARCHAR2,
-    O_NDB_ID         OUT NUMBER,
-    O_COD_RET        OUT NUMBER,
-    O_MSG            OUT VARCHAR2
-  );
-
-  PROCEDURE PR_ND_ACTUALIZAR (
-    P_NDB_ID         IN NUMBER,
-    P_NDB_FECHA      IN DATE,
-    P_NDB_MONTO      IN NUMBER,
-    P_NDB_MOTIVO     IN VARCHAR2,
-    O_COD_RET        OUT NUMBER,
-    O_MSG            OUT VARCHAR2
-  );
-
-  PROCEDURE PR_ND_ELIMINAR (
-    P_NDB_ID         IN NUMBER,
-    O_COD_RET        OUT NUMBER,
-    O_MSG            OUT VARCHAR2
-  );
-
-  PROCEDURE PR_ND_OBTENER (
-    P_NDB_ID         IN NUMBER,
-    O_CURSOR         OUT SYS_REFCURSOR,
-    O_COD_RET        OUT NUMBER,
-    O_MSG            OUT VARCHAR2
-  );
-
-  PROCEDURE PR_ND_LISTAR (
-    P_FAC_FACTURA    IN NUMBER DEFAULT NULL,
-    O_CURSOR         OUT SYS_REFCURSOR,
-    O_COD_RET        OUT NUMBER,
-    O_MSG            OUT VARCHAR2
-  );
-
-END PKG_MUE_NOTA_DEBITO;
-/
 CREATE OR REPLACE PACKAGE BODY PKG_MUE_NOTA_DEBITO AS
 
   C_OK    CONSTANT NUMBER := 0;
@@ -48,24 +5,37 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUE_NOTA_DEBITO AS
   C_NOFND CONSTANT NUMBER := 2;
 
   PROCEDURE PR_ND_INSERTAR (
-    P_FAC_FACTURA,
-    P_NDB_FECHA,
-    P_NDB_MONTO,
-    P_NDB_MOTIVO,
-    O_NDB_ID OUT NUMBER,
-    O_COD_RET OUT NUMBER,
-    O_MSG OUT VARCHAR2
+    P_FAC_FACTURA IN NUMBER,
+    P_NDB_FECHA   IN DATE,
+    P_NDB_MONTO   IN NUMBER,
+    P_NDB_MOTIVO  IN VARCHAR2,
+    O_NDB_ID      OUT NUMBER,
+    O_COD_RET     OUT NUMBER,
+    O_MSG         OUT VARCHAR2
   ) IS
-    V_TOTAL_FACTURA NUMBER;
+    V_EXISTE NUMBER;
   BEGIN
-    SELECT FAC_Total
-      INTO V_TOTAL_FACTURA
-      FROM MUE_FACTURA
-     WHERE FAC_Factura = P_FAC_FACTURA;
+    -- [FIX #14] Validar NULL explícito antes de comparar con <= 0
+    IF P_NDB_MONTO IS NULL THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'El monto no puede ser nulo.';
+      RETURN;
+    END IF;
 
     IF P_NDB_MONTO <= 0 THEN
       O_COD_RET := C_ERR;
       O_MSG := 'El monto debe ser mayor a cero.';
+      RETURN;
+    END IF;
+
+    SELECT COUNT(*)
+      INTO V_EXISTE
+      FROM MUE_FACTURA
+     WHERE FAC_Factura = P_FAC_FACTURA;
+
+    IF V_EXISTE = 0 THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'La factura indicada no existe.';
       RETURN;
     END IF;
 
@@ -89,9 +59,6 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUE_NOTA_DEBITO AS
     O_MSG := 'Nota débito registrada correctamente.';
 
   EXCEPTION
-    WHEN NO_DATA_FOUND THEN
-      O_COD_RET := C_ERR;
-      O_MSG := 'La factura indicada no existe.';
     WHEN OTHERS THEN
       O_COD_RET := C_ERR;
       O_MSG := 'Error al registrar nota débito: ' || SQLERRM;
@@ -99,15 +66,28 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUE_NOTA_DEBITO AS
 
 
   PROCEDURE PR_ND_ACTUALIZAR (
-    P_NDB_ID,
-    P_NDB_FECHA,
-    P_NDB_MONTO,
-    P_NDB_MOTIVO,
-    O_COD_RET OUT NUMBER,
-    O_MSG OUT VARCHAR2
+    P_NDB_ID     IN NUMBER,
+    P_NDB_FECHA  IN DATE,
+    P_NDB_MONTO  IN NUMBER,
+    P_NDB_MOTIVO IN VARCHAR2,
+    O_COD_RET    OUT NUMBER,
+    O_MSG        OUT VARCHAR2
   ) IS
     V_EXISTE NUMBER;
   BEGIN
+    -- [FIX #14] Validar NULL antes de verificar existencia en BD
+    IF P_NDB_MONTO IS NULL THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'El monto no puede ser nulo.';
+      RETURN;
+    END IF;
+
+    IF P_NDB_MONTO <= 0 THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'El monto debe ser mayor a cero.';
+      RETURN;
+    END IF;
+
     SELECT COUNT(*)
       INTO V_EXISTE
       FROM MUE_NOTA_DEBITO
@@ -119,15 +99,9 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUE_NOTA_DEBITO AS
       RETURN;
     END IF;
 
-    IF P_NDB_MONTO <= 0 THEN
-      O_COD_RET := C_ERR;
-      O_MSG := 'El monto debe ser mayor a cero.';
-      RETURN;
-    END IF;
-
     UPDATE MUE_NOTA_DEBITO
-       SET NDB_Fecha = P_NDB_FECHA,
-           NDB_Monto = P_NDB_MONTO,
+       SET NDB_Fecha  = P_NDB_FECHA,
+           NDB_Monto  = P_NDB_MONTO,
            NDB_Motivo = P_NDB_MOTIVO
      WHERE NDB_Nota_Debito = P_NDB_ID;
 
@@ -142,9 +116,9 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUE_NOTA_DEBITO AS
 
 
   PROCEDURE PR_ND_ELIMINAR (
-    P_NDB_ID IN NUMBER,
+    P_NDB_ID  IN NUMBER,
     O_COD_RET OUT NUMBER,
-    O_MSG OUT VARCHAR2
+    O_MSG     OUT VARCHAR2
   ) IS
   BEGIN
     DELETE FROM MUE_NOTA_DEBITO
@@ -167,14 +141,20 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUE_NOTA_DEBITO AS
 
 
   PROCEDURE PR_ND_OBTENER (
-    P_NDB_ID IN NUMBER,
-    O_CURSOR OUT SYS_REFCURSOR,
+    P_NDB_ID  IN NUMBER,
+    O_CURSOR  OUT SYS_REFCURSOR,
     O_COD_RET OUT NUMBER,
-    O_MSG OUT VARCHAR2
+    O_MSG     OUT VARCHAR2
   ) IS
   BEGIN
+    -- [FIX #15] Columnas explícitas en lugar de SELECT *
     OPEN O_CURSOR FOR
-      SELECT *
+      SELECT NDB_Nota_Debito,
+             FAC_Factura,
+             NDB_Fecha,
+             NDB_Monto,
+             NDB_Motivo,
+             NDB_Created_At
         FROM MUE_NOTA_DEBITO
        WHERE NDB_Nota_Debito = P_NDB_ID;
 
@@ -185,13 +165,19 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUE_NOTA_DEBITO AS
 
   PROCEDURE PR_ND_LISTAR (
     P_FAC_FACTURA IN NUMBER DEFAULT NULL,
-    O_CURSOR OUT SYS_REFCURSOR,
-    O_COD_RET OUT NUMBER,
-    O_MSG OUT VARCHAR2
+    O_CURSOR      OUT SYS_REFCURSOR,
+    O_COD_RET     OUT NUMBER,
+    O_MSG         OUT VARCHAR2
   ) IS
   BEGIN
+    -- [FIX #15] Columnas explícitas en lugar de SELECT *
     OPEN O_CURSOR FOR
-      SELECT *
+      SELECT NDB_Nota_Debito,
+             FAC_Factura,
+             NDB_Fecha,
+             NDB_Monto,
+             NDB_Motivo,
+             NDB_Created_At
         FROM MUE_NOTA_DEBITO
        WHERE P_FAC_FACTURA IS NULL
           OR FAC_Factura = P_FAC_FACTURA

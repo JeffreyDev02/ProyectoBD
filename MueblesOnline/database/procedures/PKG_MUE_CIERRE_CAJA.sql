@@ -1,184 +1,166 @@
-CREATE OR REPLACE PACKAGE PKG_MUE_CIERRE_CAJA AS
+CREATE OR REPLACE PACKAGE BODY PKG_MUE_CUENTA AS
 
-  PROCEDURE PR_CAJA_APERTURAR (
+  C_OK    CONSTANT NUMBER := 0;
+  C_ERR   CONSTANT NUMBER := 1;
+  C_NOFND CONSTANT NUMBER := 2;
+
+  PROCEDURE PR_CUENTA_INSERTAR (
+    P_CSE_NO_CUENTA   IN VARCHAR2,
+    P_CSE_TIPO        IN VARCHAR2,
+    P_CSE_DESCRIPCION IN VARCHAR2,
     P_SED_SEDE        IN NUMBER,
-    P_MONTO_INICIAL   IN NUMBER,
-    P_ECA_ESTADO      IN NUMBER,
-    O_CCA_CIERRE      OUT NUMBER,
+    O_CSE_CUENTA      OUT NUMBER,
     O_COD_RET         OUT NUMBER,
     O_MSG             OUT VARCHAR2
-  );
-
-  PROCEDURE PR_CAJA_CERRAR (
-    P_CCA_CIERRE      IN NUMBER,
-    P_MONTO_FINAL     IN NUMBER,
-    P_ECA_ESTADO      IN NUMBER,
-    O_COD_RET         OUT NUMBER,
-    O_MSG             OUT VARCHAR2
-  );
-
-  PROCEDURE PR_CAJA_OBTENER (
-    P_CCA_CIERRE      IN NUMBER,
-    O_CURSOR          OUT SYS_REFCURSOR,
-    O_COD_RET         OUT NUMBER,
-    O_MSG             OUT VARCHAR2
-  );
-
-  PROCEDURE PR_CAJA_LISTAR (
-    O_CURSOR          OUT SYS_REFCURSOR,
-    O_COD_RET         OUT NUMBER,
-    O_MSG             OUT VARCHAR2
-  );
-
-  PROCEDURE PR_CAJA_ELIMINAR (
-    P_CCA_CIERRE      IN NUMBER,
-    O_COD_RET         OUT NUMBER,
-    O_MSG             OUT VARCHAR2
-  );
-
-END PKG_MUE_CIERRE_CAJA;
-/
-CREATE OR REPLACE PACKAGE BODY PKG_MUE_CIERRE_CAJA AS
-
-  C_OK       CONSTANT NUMBER := 0;
-  C_ERR      CONSTANT NUMBER := 1;
-  C_NOFND    CONSTANT NUMBER := 2;
-
-  PROCEDURE PR_CAJA_APERTURAR (
-    P_SED_SEDE,
-    P_MONTO_INICIAL,
-    P_ECA_ESTADO,
-    O_CCA_CIERRE OUT NUMBER,
-    O_COD_RET OUT NUMBER,
-    O_MSG OUT VARCHAR2
   ) IS
     V_EXISTE NUMBER;
   BEGIN
     SELECT COUNT(*)
       INTO V_EXISTE
-      FROM MUE_CIERRE_CAJA
-     WHERE SED_Sede = P_SED_SEDE
-       AND CCA_Fecha_Fin IS NULL;
+      FROM MUE_SEDE
+     WHERE SED_Sede = P_SED_SEDE;
 
-    IF V_EXISTE > 0 THEN
+    IF V_EXISTE = 0 THEN
       O_COD_RET := C_ERR;
-      O_MSG := 'Ya existe una caja abierta en esta sede.';
+      O_MSG := 'La sede indicada no existe.';
       RETURN;
     END IF;
 
-    INSERT INTO MUE_CIERRE_CAJA (
-      SED_Sede,
-      CCA_Fecha_Inicio,
-      CCA_Monto_Inicial,
-      ECA_Estado,
-      CCA_Created_At
+    INSERT INTO MUE_CUENTA (
+      CSE_No_Cuenta,
+      CSE_Tipo,
+      CSE_Descripcion,
+      SED_Sede
     )
     VALUES (
-      P_SED_SEDE,
-      SYSTIMESTAMP,
-      P_MONTO_INICIAL,
-      P_ECA_ESTADO,
-      SYSTIMESTAMP
+      P_CSE_NO_CUENTA,
+      P_CSE_TIPO,
+      P_CSE_DESCRIPCION,
+      P_SED_SEDE
     )
-    RETURNING CCA_Cierre_Caja INTO O_CCA_CIERRE;
+    RETURNING CSE_Cuenta_Sede INTO O_CSE_CUENTA;
 
     O_COD_RET := C_OK;
-    O_MSG := 'Caja aperturada correctamente.';
+    O_MSG := 'Cuenta registrada correctamente.';
 
   EXCEPTION
     WHEN OTHERS THEN
       O_COD_RET := C_ERR;
-      O_MSG := 'Error al aperturar caja: ' || SQLERRM;
-  END PR_CAJA_APERTURAR;
+      O_MSG := 'Error al insertar cuenta: ' || SQLERRM;
+  END PR_CUENTA_INSERTAR;
 
 
-  PROCEDURE PR_CAJA_CERRAR (
-    P_CCA_CIERRE,
-    P_MONTO_FINAL,
-    P_ECA_ESTADO,
-    O_COD_RET OUT NUMBER,
-    O_MSG OUT VARCHAR2
+  PROCEDURE PR_CUENTA_ACTUALIZAR (
+    P_CSE_CUENTA      IN NUMBER,
+    P_CSE_NO_CUENTA   IN VARCHAR2,
+    P_CSE_TIPO        IN VARCHAR2,
+    P_CSE_DESCRIPCION IN VARCHAR2,
+    P_SED_SEDE        IN NUMBER,
+    O_COD_RET         OUT NUMBER,
+    O_MSG             OUT VARCHAR2
   ) IS
+    V_EXISTE NUMBER;
   BEGIN
-    UPDATE MUE_CIERRE_CAJA
-       SET CCA_Fecha_Fin = SYSTIMESTAMP,
-           CCA_Monto_Final = P_MONTO_FINAL,
-           ECA_Estado = P_ECA_ESTADO
-     WHERE CCA_Cierre_Caja = P_CCA_CIERRE
-       AND CCA_Fecha_Fin IS NULL;
+    SELECT COUNT(*)
+      INTO V_EXISTE
+      FROM MUE_SEDE
+     WHERE SED_Sede = P_SED_SEDE;
+
+    IF V_EXISTE = 0 THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'La sede indicada no existe.';
+      RETURN;
+    END IF;
+
+    UPDATE MUE_CUENTA
+       SET CSE_No_Cuenta   = P_CSE_NO_CUENTA,
+           CSE_Tipo        = P_CSE_TIPO,
+           CSE_Descripcion = P_CSE_DESCRIPCION,
+           SED_Sede        = P_SED_SEDE
+     WHERE CSE_Cuenta_Sede = P_CSE_CUENTA;
 
     IF SQL%ROWCOUNT = 0 THEN
       O_COD_RET := C_NOFND;
-      O_MSG := 'Caja no encontrada o ya cerrada.';
+      O_MSG := 'Cuenta no encontrada.';
       RETURN;
     END IF;
 
     O_COD_RET := C_OK;
-    O_MSG := 'Caja cerrada correctamente.';
+    O_MSG := 'Cuenta actualizada correctamente.';
 
   EXCEPTION
     WHEN OTHERS THEN
       O_COD_RET := C_ERR;
-      O_MSG := 'Error al cerrar caja: ' || SQLERRM;
-  END PR_CAJA_CERRAR;
+      O_MSG := 'Error al actualizar cuenta: ' || SQLERRM;
+  END PR_CUENTA_ACTUALIZAR;
 
 
-  PROCEDURE PR_CAJA_OBTENER (
-    P_CCA_CIERRE IN NUMBER,
-    O_CURSOR OUT SYS_REFCURSOR,
-    O_COD_RET OUT NUMBER,
-    O_MSG OUT VARCHAR2
+  PROCEDURE PR_CUENTA_ELIMINAR (
+    P_CSE_CUENTA IN NUMBER,
+    O_COD_RET    OUT NUMBER,
+    O_MSG        OUT VARCHAR2
   ) IS
   BEGIN
-    OPEN O_CURSOR FOR
-      SELECT *
-        FROM MUE_CIERRE_CAJA
-       WHERE CCA_Cierre_Caja = P_CCA_CIERRE;
-
-    O_COD_RET := C_OK;
-    O_MSG := 'OK';
-  END PR_CAJA_OBTENER;
-
-
-  PROCEDURE PR_CAJA_LISTAR (
-    O_CURSOR OUT SYS_REFCURSOR,
-    O_COD_RET OUT NUMBER,
-    O_MSG OUT VARCHAR2
-  ) IS
-  BEGIN
-    OPEN O_CURSOR FOR
-      SELECT *
-        FROM MUE_CIERRE_CAJA
-       ORDER BY CCA_Fecha_Inicio DESC;
-
-    O_COD_RET := C_OK;
-    O_MSG := 'OK';
-  END PR_CAJA_LISTAR;
-
-
-  PROCEDURE PR_CAJA_ELIMINAR (
-    P_CCA_CIERRE IN NUMBER,
-    O_COD_RET OUT NUMBER,
-    O_MSG OUT VARCHAR2
-  ) IS
-  BEGIN
-    DELETE FROM MUE_CIERRE_CAJA
-     WHERE CCA_Cierre_Caja = P_CCA_CIERRE;
+    DELETE FROM MUE_CUENTA
+     WHERE CSE_Cuenta_Sede = P_CSE_CUENTA;
 
     IF SQL%ROWCOUNT = 0 THEN
       O_COD_RET := C_NOFND;
-      O_MSG := 'Registro de caja no encontrado.';
+      O_MSG := 'Cuenta no encontrada.';
       RETURN;
     END IF;
 
     O_COD_RET := C_OK;
-    O_MSG := 'Registro eliminado correctamente.';
+    O_MSG := 'Cuenta eliminada correctamente.';
 
   EXCEPTION
     WHEN OTHERS THEN
       O_COD_RET := C_ERR;
-      O_MSG := 'Error al eliminar registro: ' || SQLERRM;
-  END PR_CAJA_ELIMINAR;
+      O_MSG := 'Error al eliminar cuenta: ' || SQLERRM;
+  END PR_CUENTA_ELIMINAR;
 
-END PKG_MUE_CIERRE_CAJA;
+
+  PROCEDURE PR_CUENTA_OBTENER (
+    P_CSE_CUENTA IN NUMBER,
+    O_CURSOR     OUT SYS_REFCURSOR,
+    O_COD_RET    OUT NUMBER,
+    O_MSG        OUT VARCHAR2
+  ) IS
+  BEGIN
+    -- [FIX #15] Columnas explícitas en lugar de SELECT *
+    OPEN O_CURSOR FOR
+      SELECT CSE_Cuenta_Sede,
+             CSE_No_Cuenta,
+             CSE_Tipo,
+             CSE_Descripcion,
+             SED_Sede
+        FROM MUE_CUENTA
+       WHERE CSE_Cuenta_Sede = P_CSE_CUENTA;
+
+    O_COD_RET := C_OK;
+    O_MSG := 'OK';
+  END PR_CUENTA_OBTENER;
+
+
+  PROCEDURE PR_CUENTA_LISTAR (
+    O_CURSOR  OUT SYS_REFCURSOR,
+    O_COD_RET OUT NUMBER,
+    O_MSG     OUT VARCHAR2
+  ) IS
+  BEGIN
+    -- [FIX #15] Columnas explícitas en lugar de SELECT *
+    OPEN O_CURSOR FOR
+      SELECT CSE_Cuenta_Sede,
+             CSE_No_Cuenta,
+             CSE_Tipo,
+             CSE_Descripcion,
+             SED_Sede
+        FROM MUE_CUENTA
+       ORDER BY CSE_Cuenta_Sede DESC;
+
+    O_COD_RET := C_OK;
+    O_MSG := 'OK';
+  END PR_CUENTA_LISTAR;
+
+END PKG_MUE_CUENTA;
 /
