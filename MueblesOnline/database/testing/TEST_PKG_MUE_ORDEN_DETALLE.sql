@@ -1,0 +1,125 @@
+SET SERVEROUTPUT ON SIZE UNLIMITED;
+
+PROMPT === 1) Insertar primer detalle y verificar total en cabecera ===
+DECLARE
+  V_ID_DET NUMBER;
+  V_ID_OV  NUMBER;
+  V_RET    NUMBER;
+  V_MSG    VARCHAR2(4000);
+  V_TOTAL  NUMBER;
+BEGIN
+  V_ID_OV := 1; 
+
+  PKG_MUE_ORDEN_DETALLE.PR_DETALLE_INSERTAR(
+    P_MOV_ORDEN_VENTA    => V_ID_OV,
+    P_PRO_PRODUCTO       => 1,
+    P_MOD_CANTIDAD       => 2,
+    P_MOD_PRECIO_UNITARIO => 500.00,
+    P_MOD_TOTAL_LINEAL   => 1000.00,
+    O_MOD_ORDEN_DETALLE  => V_ID_DET,
+    O_COD_RET            => V_RET,
+    O_MSG                => V_MSG
+  );
+  
+  SELECT MOV_Total INTO V_TOTAL FROM MUE_ORDEN_VENTA WHERE MOV_Orden_Venta = V_ID_OV;
+  DBMS_OUTPUT.PUT_LINE('INSERT DETALLE: RET=' || V_RET || ' ID_DET=' || V_ID_DET);
+  DBMS_OUTPUT.PUT_LINE('VERIFICACION CABECERA -> Nuevo Total: ' || V_TOTAL);
+END;
+/
+
+PROMPT === 2) Obtener detalle específico ===
+DECLARE
+  V_CUR  SYS_REFCURSOR;
+  V_RET  NUMBER;
+  V_MSG  VARCHAR2(4000);
+  V_ID   NUMBER;
+  V_ID_D NUMBER; V_OV NUMBER; V_PRO NUMBER; V_CAN NUMBER; V_PRE NUMBER; V_SUB NUMBER;
+BEGIN
+  SELECT MAX(MOD_Orden_Detalle) INTO V_ID FROM MUE_ORDEN_DETALLE WHERE MOV_Orden_Venta = 1;
+
+  PKG_MUE_ORDEN_DETALLE.PR_DETALLE_OBTENER(
+    P_MOD_ORDEN_DETALLE => V_ID,
+    O_CURSOR            => V_CUR,
+    O_COD_RET           => V_RET,
+    O_MSG               => V_MSG
+  );
+  
+  FETCH V_CUR INTO V_ID_D, V_OV, V_PRO, V_CAN, V_PRE, V_SUB;
+  DBMS_OUTPUT.PUT_LINE('RET=' || V_RET || ' PRODUCTO=' || V_PRO || ' SUBTOTAL=' || V_SUB);
+  CLOSE V_CUR;
+END;
+/
+
+PROMPT === 3) Actualizar cantidad y verificar recálculo ===
+DECLARE
+  V_ID_DET NUMBER;
+  V_RET    NUMBER;
+  V_MSG    VARCHAR2(4000);
+  V_TOTAL  NUMBER;
+BEGIN
+  SELECT MAX(MOD_Orden_Detalle) INTO V_ID_DET FROM MUE_ORDEN_DETALLE WHERE MOV_Orden_Venta = 1;
+
+  PKG_MUE_ORDEN_DETALLE.PR_DETALLE_ACTUALIZAR(
+    P_MOD_ORDEN_DETALLE   => V_ID_DET,
+    P_MOV_ORDEN_VENTA     => 1,
+    P_PRO_PRODUCTO        => 1,
+    P_MOD_CANTIDAD        => 5,
+    P_MOD_PRECIO_UNITARIO  => 500.00,
+    P_MOD_TOTAL_LINEAL    => 2500.00,
+    O_COD_RET             => V_RET,
+    O_MSG                 => V_MSG
+  );
+  
+  SELECT MOV_Total INTO V_TOTAL FROM MUE_ORDEN_VENTA WHERE MOV_Orden_Venta = 1;
+  DBMS_OUTPUT.PUT_LINE('UPDATE DETALLE: RET=' || V_RET);
+  DBMS_OUTPUT.PUT_LINE('VERIFICACION CABECERA -> Nuevo Total (5x500): ' || V_TOTAL);
+END;
+/
+
+PROMPT === 4) Listar detalles de una orden ===
+DECLARE
+  V_CUR  SYS_REFCURSOR;
+  V_RET  NUMBER;
+  V_MSG  VARCHAR2(4000);
+  V_ID_D NUMBER; V_CAN NUMBER; V_SUB NUMBER;
+BEGIN
+  PKG_MUE_ORDEN_DETALLE.PR_DETALLE_LISTAR(
+    P_MOV_ORDEN_VENTA => 1,
+    O_CURSOR          => V_CUR,
+    O_COD_RET         => V_RET,
+    O_MSG             => V_MSG
+  );
+  
+  DBMS_OUTPUT.PUT_LINE('LISTADO DE DETALLES ORDEN 1:');
+  LOOP
+    FETCH V_CUR INTO V_ID_D, V_CAN, V_SUB; 
+    EXIT WHEN V_CUR%NOTFOUND;
+    DBMS_OUTPUT.PUT_LINE('  ID: ' || V_ID_D || ' Cant: ' || V_CAN || ' Subtotal: ' || V_SUB);
+  END LOOP;
+  CLOSE V_CUR;
+END;
+/
+
+PROMPT === 5) Eliminar detalle y verificar que el total disminuya ===
+DECLARE
+  V_ID_DET NUMBER;
+  V_RET    NUMBER;
+  V_MSG    VARCHAR2(4000);
+  V_TOTAL  NUMBER;
+BEGIN
+  SELECT MAX(MOD_Orden_Detalle) INTO V_ID_DET FROM MUE_ORDEN_DETALLE WHERE MOV_Orden_Venta = 1;
+
+  PKG_MUE_ORDEN_DETALLE.PR_DETALLE_ELIMINAR(
+    P_MOD_ORDEN_DETALLE => V_ID_DET,
+    O_COD_RET           => V_RET,
+    O_MSG               => V_MSG
+  );
+  
+  SELECT MOV_Total INTO V_TOTAL FROM MUE_ORDEN_VENTA WHERE MOV_Orden_Venta = 1;
+  DBMS_OUTPUT.PUT_LINE('DELETE DETALLE: RET=' || V_RET);
+  DBMS_OUTPUT.PUT_LINE('VERIFICACION CABECERA -> Total después de eliminar: ' || V_TOTAL);
+END;
+/
+
+PROMPT === Verificación final (Conteo de detalles para orden 1) ===
+SELECT COUNT(1) AS DETALLES_RESTANTES FROM MUE_ORDEN_DETALLE WHERE MOV_Orden_Venta = 1;

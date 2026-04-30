@@ -1,0 +1,128 @@
+SET SERVEROUTPUT ON SIZE UNLIMITED;
+
+PROMPT === 1) Insertar empleado de prueba ===
+DECLARE
+  V_ID  NUMBER;
+  V_RET NUMBER;
+  V_MSG VARCHAR2(4000);
+BEGIN
+  PKG_MUE_EMPLEADO.PR_EMPLEADO_INSERTAR(
+    P_DEP_DEPARTAMENTO => 1,
+    P_USU_USUARIO      => 1,
+    P_EMP_CARGO        => 'Gerente de Ventas',
+    P_EMP_SALARIO      => 7500.00,
+    P_EMP_FECHA_INGRESO => TO_DATE('2026-01-01', 'YYYY-MM-DD'),
+    O_EMP_EMPLEADO     => V_ID,
+    O_COD_RET          => V_RET,
+    O_MSG              => V_MSG
+  );
+  DBMS_OUTPUT.PUT_LINE('RET=' || V_RET || ' MSG=' || V_MSG || ' ID=' || V_ID);
+END;
+/
+
+PROMPT === 2) Caso Negativo: Departamento inexistente ===
+DECLARE
+  V_ID  NUMBER;
+  V_RET NUMBER;
+  V_MSG VARCHAR2(4000);
+BEGIN
+  PKG_MUE_EMPLEADO.PR_EMPLEADO_INSERTAR(
+    P_DEP_DEPARTAMENTO => 99999,
+    P_USU_USUARIO      => 1,
+    P_EMP_CARGO        => 'Puesto QA',
+    P_EMP_SALARIO      => 3000.00,
+    P_EMP_FECHA_INGRESO => SYSDATE,
+    O_EMP_EMPLEADO     => V_ID,
+    O_COD_RET          => V_RET,
+    O_MSG              => V_MSG
+  );
+  DBMS_OUTPUT.PUT_LINE('RET=' || V_RET || ' MSG=' || V_MSG);
+END;
+/
+
+PROMPT === 3) Obtener datos del empleado ===
+DECLARE
+  V_CUR  SYS_REFCURSOR;
+  V_RET  NUMBER;
+  V_MSG  VARCHAR2(4000);
+  V_ID   NUMBER;
+  V_EMP  NUMBER; V_DEP NUMBER; V_USU NUMBER; V_CRG VARCHAR2(50); V_SAL NUMBER;
+BEGIN
+  SELECT MAX(EMP_Empleado) INTO V_ID FROM MUE_EMPLEADO WHERE USU_Usuario = 1;
+
+  PKG_MUE_EMPLEADO.PR_EMPLEADO_OBTENER(
+    P_EMP_EMPLEADO => V_ID,
+    O_CURSOR       => V_CUR,
+    O_COD_RET      => V_RET,
+    O_MSG          => V_MSG
+  );
+  
+  FETCH V_CUR INTO V_EMP, V_DEP, V_USU, V_CRG, V_SAL;
+  DBMS_OUTPUT.PUT_LINE('RET=' || V_RET || ' CARGO=' || V_CRG || ' SALARIO=' || V_SAL);
+  CLOSE V_CUR;
+END;
+/
+
+PROMPT === 4) Actualizar empleado ===
+DECLARE
+  V_ID  NUMBER;
+  V_RET NUMBER;
+  V_MSG VARCHAR2(4000);
+BEGIN
+  SELECT MAX(EMP_Empleado) INTO V_ID FROM MUE_EMPLEADO WHERE USU_Usuario = 1;
+
+  PKG_MUE_EMPLEADO.PR_EMPLEADO_ACTUALIZAR(
+    P_EMP_EMPLEADO     => V_ID,
+    P_DEP_DEPARTAMENTO => 1,
+    P_USU_USUARIO      => 1,
+    P_EMP_CARGO        => 'Director Regional',
+    P_EMP_SALARIO      => 9000.00,
+    P_EMP_FECHA_INGRESO => TO_DATE('2026-01-01', 'YYYY-MM-DD'),
+    O_COD_RET          => V_RET,
+    O_MSG              => V_MSG
+  );
+  DBMS_OUTPUT.PUT_LINE('UPDATE RET=' || V_RET || ' MSG=' || V_MSG);
+END;
+/
+
+PROMPT === 5) Listar empleados ===
+DECLARE
+  V_CUR  SYS_REFCURSOR;
+  V_RET  NUMBER;
+  V_MSG  VARCHAR2(4000);
+  V_EMP  NUMBER; V_CRG VARCHAR2(50);
+BEGIN
+  PKG_MUE_EMPLEADO.PR_EMPLEADO_LISTAR(
+    O_CURSOR  => V_CUR,
+    O_COD_RET => V_RET,
+    O_MSG     => V_MSG
+  );
+  
+  LOOP
+    FETCH V_CUR INTO V_EMP, V_CRG;
+    EXIT WHEN V_CUR%NOTFOUND;
+    DBMS_OUTPUT.PUT_LINE('ID: ' || V_EMP || ' | Puesto: ' || V_CRG);
+  END LOOP;
+  CLOSE V_CUR;
+END;
+/
+
+PROMPT === 6) Eliminar empleado de prueba ===
+DECLARE
+  V_ID  NUMBER;
+  V_RET NUMBER;
+  V_MSG VARCHAR2(4000);
+BEGIN
+  SELECT MAX(EMP_Empleado) INTO V_ID FROM MUE_EMPLEADO WHERE USU_Usuario = 1;
+
+  PKG_MUE_EMPLEADO.PR_EMPLEADO_ELIMINAR(
+    P_EMP_EMPLEADO => V_ID,
+    O_COD_RET      => V_RET,
+    O_MSG          => V_MSG
+  );
+  DBMS_OUTPUT.PUT_LINE('DELETE RET=' || V_RET || ' MSG=' || V_MSG);
+END;
+/
+
+PROMPT === Verificacion final (Debe ser 0) ===
+SELECT COUNT(1) AS CANT FROM MUE_EMPLEADO WHERE EMP_Cargo = 'Director Regional';
