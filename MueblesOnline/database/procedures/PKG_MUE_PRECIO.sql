@@ -1,0 +1,245 @@
+CREATE OR REPLACE PACKAGE BODY PKG_MUE_PRECIO AS
+
+  C_OK    CONSTANT NUMBER := 0;
+  C_ERR   CONSTANT NUMBER := 1;
+  C_NOFND CONSTANT NUMBER := 2;
+
+  PROCEDURE PR_PRECIO_INSERTAR (
+    P_PRO_PRODUCTO  IN NUMBER,
+    P_PRE_VALOR     IN NUMBER,
+    P_PRE_FECHA_INI IN DATE,
+    P_PRE_FECHA_FIN IN DATE,
+    P_PRE_ACTIVO    IN NUMBER,
+    O_PRE_PRECIO    OUT NUMBER,
+    O_COD_RET       OUT NUMBER,
+    O_MSG           OUT VARCHAR2
+  ) IS
+    V_EXISTE NUMBER;
+  BEGIN
+    SELECT COUNT(*)
+      INTO V_EXISTE
+      FROM MUE_PRODUCTO
+     WHERE PRO_Producto = P_PRO_PRODUCTO;
+
+    IF V_EXISTE = 0 THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'El producto especificado no existe.';
+      RETURN;
+    END IF;
+
+    IF P_PRE_FECHA_INI IS NULL THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'La fecha inicial es obligatoria.';
+      RETURN;
+    END IF;
+
+    IF P_PRE_ACTIVO IS NULL THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'El indicador activo es obligatorio.';
+      RETURN;
+    END IF;
+
+    IF P_PRE_VALOR IS NULL OR P_PRE_VALOR < 0 THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'El valor del precio es obligatorio y no puede ser negativo.';
+      RETURN;
+    END IF;
+
+    IF P_PRE_FECHA_FIN IS NOT NULL AND P_PRE_FECHA_FIN < P_PRE_FECHA_INI THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'La fecha final no puede ser menor a la inicial.';
+      RETURN;
+    END IF;
+
+    SELECT COUNT(*)
+      INTO V_EXISTE
+      FROM MUE_PRECIO
+     WHERE PRO_Producto = P_PRO_PRODUCTO
+       AND (
+             P_PRE_FECHA_INI <= NVL(PRE_Fecha_Fin, DATE '2999-12-31')
+         AND NVL(P_PRE_FECHA_FIN, DATE '2999-12-31') >= PRE_Fecha_Ini
+       );
+
+    IF V_EXISTE > 0 THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'Ya existe un precio con fechas que se traslapan.';
+      RETURN;
+    END IF;
+
+    INSERT INTO MUE_PRECIO (
+      PRO_Producto,
+      PRE_Valor,
+      PRE_Fecha_Ini,
+      PRE_Fecha_Fin,
+      PRE_Activo
+    )
+    VALUES (
+      P_PRO_PRODUCTO,
+      P_PRE_VALOR,
+      P_PRE_FECHA_INI,
+      P_PRE_FECHA_FIN,
+      P_PRE_ACTIVO
+    )
+    RETURNING PRE_Precio INTO O_PRE_PRECIO;
+
+    O_COD_RET := C_OK;
+    O_MSG := 'Precio registrado correctamente.';
+
+  EXCEPTION
+    WHEN OTHERS THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'Error al insertar precio: ' || SQLERRM;
+  END PR_PRECIO_INSERTAR;
+
+
+  PROCEDURE PR_PRECIO_ACTUALIZAR (
+    P_PRE_PRECIO    IN NUMBER,
+    P_PRE_VALOR     IN NUMBER,
+    P_PRE_FECHA_INI IN DATE,
+    P_PRE_FECHA_FIN IN DATE,
+    P_PRE_ACTIVO    IN NUMBER,
+    O_COD_RET       OUT NUMBER,
+    O_MSG           OUT VARCHAR2
+  ) IS
+    V_PRO    NUMBER;
+    V_EXISTE NUMBER;
+  BEGIN
+    IF P_PRE_FECHA_INI IS NULL THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'La fecha inicial es obligatoria.';
+      RETURN;
+    END IF;
+
+    IF P_PRE_ACTIVO IS NULL THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'El indicador activo es obligatorio.';
+      RETURN;
+    END IF;
+
+    IF P_PRE_VALOR IS NULL OR P_PRE_VALOR < 0 THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'El valor del precio es obligatorio y no puede ser negativo.';
+      RETURN;
+    END IF;
+
+    IF P_PRE_FECHA_FIN IS NOT NULL AND P_PRE_FECHA_FIN < P_PRE_FECHA_INI THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'La fecha final no puede ser menor a la inicial.';
+      RETURN;
+    END IF;
+
+    SELECT PRO_Producto
+      INTO V_PRO
+      FROM MUE_PRECIO
+     WHERE PRE_Precio = P_PRE_PRECIO;
+
+    SELECT COUNT(*)
+      INTO V_EXISTE
+      FROM MUE_PRECIO
+     WHERE PRO_Producto = V_PRO
+       AND PRE_Precio  <> P_PRE_PRECIO
+       AND (
+             P_PRE_FECHA_INI <= NVL(PRE_Fecha_Fin, DATE '2999-12-31')
+         AND NVL(P_PRE_FECHA_FIN, DATE '2999-12-31') >= PRE_Fecha_Ini
+       );
+
+    IF V_EXISTE > 0 THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'Las fechas se traslapan con otro precio.';
+      RETURN;
+    END IF;
+
+    UPDATE MUE_PRECIO
+       SET PRE_Valor     = P_PRE_VALOR,
+           PRE_Fecha_Ini = P_PRE_FECHA_INI,
+           PRE_Fecha_Fin = P_PRE_FECHA_FIN,
+           PRE_Activo    = P_PRE_ACTIVO
+     WHERE PRE_Precio = P_PRE_PRECIO;
+
+    O_COD_RET := C_OK;
+    O_MSG := 'Precio actualizado correctamente.';
+
+  EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+      O_COD_RET := C_NOFND;
+      O_MSG := 'Precio no encontrado.';
+    WHEN OTHERS THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'Error al actualizar precio: ' || SQLERRM;
+  END PR_PRECIO_ACTUALIZAR;
+
+
+  PROCEDURE PR_PRECIO_ELIMINAR (
+    P_PRE_PRECIO IN NUMBER,
+    O_COD_RET    OUT NUMBER,
+    O_MSG        OUT VARCHAR2
+  ) IS
+  BEGIN
+    DELETE FROM MUE_PRECIO
+     WHERE PRE_Precio = P_PRE_PRECIO;
+
+    IF SQL%ROWCOUNT = 0 THEN
+      O_COD_RET := C_NOFND;
+      O_MSG := 'Precio no encontrado.';
+      RETURN;
+    END IF;
+
+    O_COD_RET := C_OK;
+    O_MSG := 'Precio eliminado correctamente.';
+
+  EXCEPTION
+    WHEN OTHERS THEN
+      O_COD_RET := C_ERR;
+      O_MSG := 'Error al eliminar precio: ' || SQLERRM;
+  END PR_PRECIO_ELIMINAR;
+
+
+  PROCEDURE PR_PRECIO_OBTENER (
+    P_PRE_PRECIO IN NUMBER,
+    O_CURSOR     OUT SYS_REFCURSOR,
+    O_COD_RET    OUT NUMBER,
+    O_MSG        OUT VARCHAR2
+  ) IS
+  BEGIN
+    -- [FIX #15] Columnas explícitas en lugar de SELECT *
+    OPEN O_CURSOR FOR
+      SELECT PRE_Precio,
+             PRO_Producto,
+             PRE_Valor,
+             PRE_Fecha_Ini,
+             PRE_Fecha_Fin,
+             PRE_Activo
+        FROM MUE_PRECIO
+       WHERE PRE_Precio = P_PRE_PRECIO;
+
+    O_COD_RET := C_OK;
+    O_MSG := 'OK';
+  END PR_PRECIO_OBTENER;
+
+
+  PROCEDURE PR_PRECIO_LISTAR (
+    P_PRO_PRODUCTO IN NUMBER DEFAULT NULL,
+    O_CURSOR       OUT SYS_REFCURSOR,
+    O_COD_RET      OUT NUMBER,
+    O_MSG          OUT VARCHAR2
+  ) IS
+  BEGIN
+    -- [FIX #15] Columnas explícitas en lugar de SELECT *
+    OPEN O_CURSOR FOR
+      SELECT PRE_Precio,
+             PRO_Producto,
+             PRE_Valor,
+             PRE_Fecha_Ini,
+             PRE_Fecha_Fin,
+             PRE_Activo
+        FROM MUE_PRECIO
+       WHERE P_PRO_PRODUCTO IS NULL
+          OR PRO_Producto = P_PRO_PRODUCTO
+       ORDER BY PRE_Fecha_Ini DESC;
+
+    O_COD_RET := C_OK;
+    O_MSG := 'OK';
+  END PR_PRECIO_LISTAR;
+
+END PKG_MUE_PRECIO;
+/
